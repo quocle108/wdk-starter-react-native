@@ -109,7 +109,7 @@ export default function TokenDetailsScreen() {
     if (!networkBalance) return;
 
     // Capitalize network name (e.g., "polygon" -> "Polygon")
-    const networkName = networkConfigs[network].name;
+    const networkName = networkConfigs[network]?.name || network;
 
     // Navigate to send details screen with all required params
     router.push({
