@@ -59,7 +59,7 @@ export default function SettingsScreen() {
   };
 
   const getNetworkName = (network: string) => {
-    return networkConfigs[network as NetworkType].name || network;
+    return networkConfigs[network as NetworkType]?.name || network;
   };
 
   return (
