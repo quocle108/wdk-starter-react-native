@@ -36,7 +36,7 @@ export function TokenDetails({ tokenData, onSendPress }: TokenDetailsProps) {
     if (onSendPress) {
       onSendPress(network);
     } else {
-      const networkName = network ? networkConfigs[network].name || network : 'any network';
+      const networkName = network ? networkConfigs[network]?.name || network : 'any network';
       Alert.alert('Send Token', `Send ${tokenData.symbol} on ${networkName}`);
     }
   };
