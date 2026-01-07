@@ -3,6 +3,12 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
+// Watch folders for local file: dependencies
+config.watchFolders = [
+  path.resolve(__dirname, '..', 'dario-wdk-react-native-core'),
+  path.resolve(__dirname, '..', 'pear-wrk-wdk'),
+];
+
 const { transformer, resolver } = config;
 
 config.transformer = {
