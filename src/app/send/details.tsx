@@ -1,9 +1,6 @@
-import {
-  AssetTicker,
-  useWallet,
-  WDKService,
-  NetworkType,
-} from '@tetherto/wdk-react-native-provider';
+import { AssetTicker } from '@/config/assets';
+import { NetworkType } from '@/config/networks';
+import { useRefreshBalance } from '@tetherto/wdk-react-native-core';
 import { CryptoAddressInput } from '@tetherto/wdk-uikit-react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
@@ -45,7 +42,7 @@ import { useDebouncedCallback } from '@/hooks/use-debounced-callback';
 export default function SendDetailsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { refreshWalletBalance } = useWallet();
+  const { mutate: refreshBalance } = useRefreshBalance();
   const params = useLocalSearchParams();
   const scrollViewRef = useRef<ScrollView>(null);
   const amountSectionYPosition = useRef<number>(0);
@@ -377,25 +374,24 @@ export default function SendDetailsScreen() {
     setTransactionResult(null);
 
     try {
-      const networkType = getNetworkType(networkId);
-      const assetTicker = getAssetTicker(tokenId);
-
-      // Convert fiat to token amount if in fiat mode
       let numericAmount = parseFloat(amount);
       if (inputMode === 'fiat' && tokenPrice > 0) {
         numericAmount = numericAmount / tokenPrice;
       }
 
-      const sendResult = await WDKService.sendByNetwork(
-        networkType,
-        0, // account index
-        numericAmount,
-        recipientAddress,
-        assetTicker
+      Alert.alert(
+        'Send Not Supported',
+        'Transaction sending is not yet available in this version. Amount: ' +
+          numericAmount.toFixed(6) +
+          ' ' +
+          tokenSymbol +
+          ' to ' +
+          recipientAddress.slice(0, 10) +
+          '...',
+        [{ text: 'OK' }]
       );
 
-      setTransactionResult({ txId: sendResult });
-      setShowConfirmation(true);
+      setTransactionResult({ error: 'Send not supported in current SDK version' });
     } catch (error) {
       console.error('Transaction failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
@@ -405,15 +401,14 @@ export default function SendDetailsScreen() {
       setTransactionResult({ error: errorMessage });
     } finally {
       setSendingTransaction(false);
-      refreshWalletBalance();
+      refreshBalance({ accountIndex: 0, type: 'wallet' });
     }
   }, [
     validateTransaction,
     amount,
     recipientAddress,
-    networkId,
-    tokenId,
-    refreshWalletBalance,
+    tokenSymbol,
+    refreshBalance,
     inputMode,
     tokenPrice,
   ]);
@@ -437,7 +432,17 @@ export default function SendDetailsScreen() {
     const fee = transactionResult.txId?.fee;
     if (!fee) return formatTokenAmount(0, token);
 
-    const value = Number(fee) / WDKService.getDenominationValue(token);
+    const denominationValues: Record<string, number> = {
+      btc: 1e8,
+      eth: 1e18,
+      usdt: 1e6,
+      xaut: 1e6,
+      matic: 1e18,
+      ton: 1e9,
+      trx: 1e6,
+    };
+    const denomValue = denominationValues[token.toLowerCase()] || 1e18;
+    const value = Number(fee) / denomValue;
     return formatTokenAmount(value, token);
   };
 

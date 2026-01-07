@@ -1,13 +1,12 @@
 import Header from '@/components/header';
 import { clearAvatar } from '@/config/avatar-options';
-import { networkConfigs } from '@/config/networks';
+import { networkConfigs, NetworkType } from '@/config/networks';
 import useWalletAvatar from '@/hooks/use-wallet-avatar';
-import getDisplaySymbol from '@/utils/get-display-symbol';
-import { NetworkType, useWallet } from '@tetherto/wdk-react-native-provider';
+import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import * as Clipboard from 'expo-clipboard';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import { Copy, Info, Shield, Trash2, Wallet } from 'lucide-react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
@@ -16,8 +15,24 @@ import { colors } from '@/constants/colors';
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { wallet, clearWallet, addresses } = useWallet();
+  const { addresses } = useWallet();
+  const { deleteWallet } = useWalletManager();
   const avatar = useWalletAvatar();
+  const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (addresses) {
+      const addressMap: Record<string, string> = {};
+      Object.entries(addresses).forEach(([network, addressData]) => {
+        if (addressData && typeof addressData === 'object' && 'address' in addressData) {
+          addressMap[network] = (addressData as { address: string }).address;
+        } else if (typeof addressData === 'string') {
+          addressMap[network] = addressData;
+        }
+      });
+      setWalletAddresses(addressMap);
+    }
+  }, [addresses]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
@@ -33,7 +48,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await clearWallet();
+              await deleteWallet();
               await clearAvatar();
               toast.success('Wallet deleted successfully');
               router.dismissAll('/');
@@ -71,7 +86,6 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Wallet Info Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Wallet size={20} color={colors.primary} />
@@ -81,24 +95,16 @@ export default function SettingsScreen() {
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Name</Text>
-              <Text style={styles.infoValue}>{wallet?.name || 'Unknown'}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Icon</Text>
-              <Text style={styles.infoValue}>{avatar}</Text>
+              <Text style={styles.infoValue}>My Wallet</Text>
             </View>
 
             <View style={[styles.infoRow, styles.infoRowLast]}>
-              <Text style={styles.infoLabel}>Enabled Assets</Text>
-              <Text style={styles.infoValue}>
-                {wallet?.enabledAssets?.map(asset => getDisplaySymbol(asset)).join(', ') || 'None'}
-              </Text>
+              <Text style={styles.infoLabel}>Icon</Text>
+              <Text style={styles.infoValue}>{avatar}</Text>
             </View>
           </View>
         </View>
 
-        {/* Network Addresses Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Shield size={20} color={colors.primary} />
@@ -106,28 +112,30 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.addressCard}>
-            {addresses &&
-              Object.entries(addresses).map(([network, address], index, array) => (
+            {Object.entries(walletAddresses).length > 0 ? (
+              Object.entries(walletAddresses).map(([network, address], index, array) => (
                 <TouchableOpacity
                   key={network}
                   style={[
                     styles.addressRow,
                     index === array.length - 1 ? styles.addressRowLast : null,
                   ]}
-                  onPress={() => handleCopyAddress(address as string, getNetworkName(network))}
+                  onPress={() => handleCopyAddress(address, getNetworkName(network))}
                   activeOpacity={0.7}
                 >
                   <View style={styles.addressContent}>
                     <Text style={styles.networkLabel}>{getNetworkName(network)}</Text>
-                    <Text style={styles.addressValue}>{formatAddress(address as string)}</Text>
+                    <Text style={styles.addressValue}>{formatAddress(address)}</Text>
                   </View>
                   <Copy size={18} color={colors.primary} />
                 </TouchableOpacity>
-              ))}
+              ))
+            ) : (
+              <Text style={styles.noAddressText}>No addresses available</Text>
+            )}
           </View>
         </View>
 
-        {/* About Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Info size={20} color={colors.primary} />
@@ -142,12 +150,11 @@ export default function SettingsScreen() {
 
             <View style={[styles.infoRow, styles.infoRowLast]}>
               <Text style={styles.infoLabel}>WDK Version</Text>
-              <Text style={styles.infoValue}>Latest</Text>
+              <Text style={styles.infoValue}>Core</Text>
             </View>
           </View>
         </View>
 
-        {/* Danger Zone */}
         <View style={styles.dangerSection}>
           <View style={styles.sectionHeader}>
             <Trash2 size={20} color={colors.danger} />
@@ -221,11 +228,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '500',
   },
-  infoValueSmall: {
-    fontSize: 12,
-    color: colors.text,
-    fontWeight: '500',
-  },
   addressCard: {
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -255,6 +257,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.text,
     fontFamily: 'monospace',
+  },
+  noAddressText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   dangerSection: {
     paddingHorizontal: 20,

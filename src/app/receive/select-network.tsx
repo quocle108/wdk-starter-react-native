@@ -1,7 +1,8 @@
 import Header from '@/components/header';
 import { assetConfig } from '@/config/assets';
 import { Network, networkConfigs } from '@/config/networks';
-import { NetworkType, useWallet } from '@tetherto/wdk-react-native-provider';
+import { NetworkType } from '@/config/networks';
+import { useWallet } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import React, { useCallback, useMemo } from 'react';
@@ -15,16 +16,15 @@ interface NetworkOption extends Network {
   description?: string;
 }
 
-// Network descriptions for receive flow
-const NETWORK_DESCRIPTIONS = {
-  [NetworkType.ETHEREUM]: 'ERC20',
-  [NetworkType.POLYGON]: 'Polygon Network',
-  [NetworkType.ARBITRUM]: 'Arbitrum One',
-  [NetworkType.TON]: 'TON Network',
-  [NetworkType.TRON]: 'Tron Network',
-  [NetworkType.SOLANA]: 'Solana Network',
-  [NetworkType.BITCOIN]: 'Native Bitcoin Network',
-  [NetworkType.LIGHTNING]: 'Lightning Network',
+const NETWORK_DESCRIPTIONS: Record<string, string> = {
+  ethereum: 'ERC20',
+  polygon: 'Polygon Network',
+  arbitrum: 'Arbitrum One',
+  ton: 'TON Network',
+  tron: 'Tron Network',
+  solana: 'Solana Network',
+  bitcoin: 'Native Bitcoin Network',
+  lightning: 'Lightning Network',
 };
 
 export default function ReceiveSelectNetworkScreen() {
@@ -39,21 +39,27 @@ export default function ReceiveSelectNetworkScreen() {
     tokenName: string;
   };
 
-  // Get available networks for the selected token
   const networks: NetworkOption[] = useMemo(() => {
-    const tokenConfig = assetConfig[tokenId];
+    const tokenConfig = assetConfig[tokenId as keyof typeof assetConfig];
     if (!tokenConfig) {
       return [];
     }
 
-    return tokenConfig.supportedNetworks.map(networkType => {
+    return tokenConfig.supportedNetworks.map((networkType: NetworkType) => {
       const network = networkConfigs[networkType];
-      const address = addresses?.[network.id as NetworkType];
+      const addressData = addresses?.[networkType];
+      const address =
+        addressData && typeof addressData === 'object' && 'address' in addressData
+          ? (addressData as { address: string }).address
+          : typeof addressData === 'string'
+            ? addressData
+            : undefined;
+
       return {
         ...network,
         address,
         hasAddress: Boolean(address),
-        description: NETWORK_DESCRIPTIONS[network.id as NetworkType],
+        description: NETWORK_DESCRIPTIONS[network.id],
       };
     });
   }, [tokenId, addresses]);
