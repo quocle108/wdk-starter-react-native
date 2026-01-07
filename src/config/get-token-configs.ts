@@ -2,6 +2,18 @@ import type { TokenConfigs } from '@tetherto/wdk-react-native-core';
 
 const getTokenConfigs = (): TokenConfigs => {
   return {
+    sepolia: {
+      native: { address: null, symbol: 'ETH', name: 'Sepolia ETH', decimals: 18 },
+      tokens: [],
+    },
+    plasma: {
+      native: { address: null, symbol: 'ETH', name: 'Plasma ETH', decimals: 18 },
+      tokens: [],
+    },
+    spark: {
+      native: { address: null, symbol: 'BTC', name: 'Bitcoin', decimals: 8 },
+      tokens: [],
+    },
     ethereum: {
       native: { address: null, symbol: 'ETH', name: 'Ethereum', decimals: 18 },
       tokens: [

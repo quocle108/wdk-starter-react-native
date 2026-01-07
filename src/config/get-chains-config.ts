@@ -1,5 +1,30 @@
 const getChainsConfig = () => {
   return {
+    sepolia: {
+      chainId: 11155111,
+      blockchain: 'sepolia',
+      provider: 'https://sepolia.gateway.tenderly.co',
+      bundlerUrl: 'https://api.candide.dev/public/v3/sepolia',
+      paymasterUrl: 'https://api.candide.dev/public/v3/sepolia',
+      paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
+      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      transferMaxFee: 100000,
+    },
+    plasma: {
+      chainId: 9745,
+      blockchain: 'plasma',
+      provider: 'https://rpc.plasma.to',
+      bundlerUrl: 'https://api.candide.dev/public/v3/9745',
+      paymasterUrl: 'https://api.candide.dev/public/v3/9745',
+      paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
+      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      transferMaxFee: 100000,
+    },
+    spark: {
+      chainId: 99999,
+      blockchain: 'spark',
+      network: 'MAINNET',
+    },
     ethereum: {
       chainId: 1,
       blockchain: 'ethereum',
