@@ -1,76 +1,21 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
-const config = getDefaultConfig(__dirname);
+module.exports = (() => {
+  const config = getDefaultConfig(__dirname);
 
-// Watch folders for local file: dependencies
-const localPackages = [
-  path.resolve(__dirname, '..', 'dario-wdk-react-native-core'),
-  path.resolve(__dirname, '..', 'pear-wrk-wdk'),
-];
+  const { transformer, resolver } = config;
 
-config.watchFolders = localPackages;
+  config.transformer = {
+    ...transformer,
+    babelTransformerPath: require.resolve('react-native-svg-transformer'),
+  };
 
-const nodeModulesPath = path.resolve(__dirname, 'node_modules');
+  config.resolver = {
+    ...resolver,
+    assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
+    sourceExts: [...resolver.sourceExts, 'svg'],
+  };
 
-// Node.js polyfills
-const extraNodeModules = {
-  stream: require.resolve('stream-browserify'),
-  http: require.resolve('stream-http'),
-  https: require.resolve('https-browserify'),
-  zlib: require.resolve('browserify-zlib'),
-  path: require.resolve('path-browserify'),
-  process: require.resolve('process'),
-  querystring: require.resolve('querystring-es3'),
-  buffer: require.resolve('@craftzdog/react-native-buffer'),
-  crypto: require.resolve('react-native-crypto'),
-  events: require.resolve('events'),
-};
-
-const { transformer, resolver } = config;
-
-config.transformer = {
-  ...transformer,
-  babelTransformerPath: require.resolve('react-native-svg-transformer'),
-};
-
-config.resolver = {
-  ...resolver,
-  assetExts: resolver.assetExts.filter(ext => ext !== 'svg'),
-  sourceExts: [...resolver.sourceExts, 'svg'],
-  nodeModulesPaths: [nodeModulesPath],
-  extraNodeModules,
-  alias: {
-    '@': path.resolve(__dirname, 'src'),
-  },
-};
-
-const originalResolveRequest = resolver.resolveRequest;
-
-config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Handle @/ alias
-  if (moduleName.startsWith('@/')) {
-    const resolvedPath = moduleName.replace('@/', path.resolve(__dirname, 'src') + '/');
-    try {
-      return context.resolveRequest(context, resolvedPath, platform);
-    } catch (e) {
-      // Fall through to default resolver
-    }
-  }
-
-  // Handle Node.js polyfills
-  if (extraNodeModules[moduleName]) {
-    return {
-      filePath: extraNodeModules[moduleName],
-      type: 'sourceFile',
-    };
-  }
-
-  if (originalResolveRequest) {
-    return originalResolveRequest(context, moduleName, platform);
-  }
-
-  return context.resolveRequest(context, moduleName, platform);
-};
-
-module.exports = config;
+  return config;
+})();
