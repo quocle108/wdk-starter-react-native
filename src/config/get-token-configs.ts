@@ -21,22 +21,6 @@ const getTokenConfigs = (): TokenConfigs => {
         { address: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
       ],
     },
-    ton: {
-      native: { address: null, symbol: 'TON', name: 'Toncoin', decimals: 9 },
-      tokens: [
-        { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-      ],
-    },
-    bitcoin: {
-      native: { address: null, symbol: 'BTC', name: 'Bitcoin', decimals: 8 },
-      tokens: [],
-    },
-    tron: {
-      native: { address: null, symbol: 'TRX', name: 'Tron', decimals: 6 },
-      tokens: [
-        { address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-      ],
-    },
   };
 };
 
