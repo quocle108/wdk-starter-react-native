@@ -47,7 +47,7 @@ const getChainsConfig = () => {
       safeModulesVersion: '0.3.0',
     },
     ton: {
-      chainId: -239,
+      chainId: 239,
       blockchain: 'ton',
       tonApiClient: {
         url: 'https://tonapi.io',
@@ -61,7 +61,7 @@ const getChainsConfig = () => {
       transferMaxFee: 1000000000,
     },
     bitcoin: {
-      chainId: 0,
+      chainId: 1,
       blockchain: 'bitcoin',
       host: 'api.ordimint.com',
       port: 50001,
