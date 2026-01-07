@@ -47,6 +47,8 @@ const getChainsConfig = () => {
       safeModulesVersion: '0.3.0',
     },
     ton: {
+      chainId: -239,
+      blockchain: 'ton',
       tonApiClient: {
         url: 'https://tonapi.io',
       },
@@ -59,11 +61,14 @@ const getChainsConfig = () => {
       transferMaxFee: 1000000000,
     },
     bitcoin: {
+      chainId: 0,
+      blockchain: 'bitcoin',
       host: 'api.ordimint.com',
       port: 50001,
     },
     tron: {
       chainId: 3448148188,
+      blockchain: 'tron',
       provider: 'https://trongrid.io',
       gasFreeProvider: 'https://gasfree.io',
       apiKey: process.env.EXPO_PUBLIC_TRON_API_KEY!,
