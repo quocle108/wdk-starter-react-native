@@ -10,7 +10,7 @@ import getErrorMessage from '@/utils/get-error-message';
 export default function AuthorizeScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { hasWallet, initializeWallet, deleteWallet } = useWalletManager();
+  const { hasWallet, initializeWallet, deleteWallet, wallets } = useWalletManager();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +57,9 @@ export default function AuthorizeScreen() {
           onPress: async () => {
             setIsLoading(true);
             try {
-              await deleteWallet();
+              for (const wallet of wallets) {
+                await deleteWallet(wallet.identifier);
+              }
               router.replace('/onboarding');
             } catch (err) {
               setError(getErrorMessage(err, 'Failed to reset wallet'));
