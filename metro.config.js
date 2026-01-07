@@ -1,6 +1,5 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
-const { configureMetroForWDK } = require('@tetherto/wdk-react-native-provider/metro-polyfills');
 
 const config = getDefaultConfig(__dirname);
 
@@ -15,32 +14,48 @@ config.resolver = {
   ...resolver,
   assetExts: resolver.assetExts.filter(ext => ext !== 'svg'),
   sourceExts: [...resolver.sourceExts, 'svg'],
-  // Ensure module paths include root node_modules
   nodeModulesPaths: [path.resolve(__dirname, 'node_modules')],
   alias: {
     '@': path.resolve(__dirname, 'src'),
   },
+  extraNodeModules: {
+    stream: require.resolve('stream-browserify'),
+    http: require.resolve('stream-http'),
+    https: require.resolve('https-browserify'),
+    zlib: require.resolve('browserify-zlib'),
+    path: require.resolve('path-browserify'),
+    process: require.resolve('process'),
+    querystring: require.resolve('querystring-es3'),
+    buffer: require.resolve('@craftzdog/react-native-buffer'),
+    crypto: require.resolve('react-native-crypto'),
+    events: require.resolve('events'),
+  },
 };
 
-// Apply WDK polyfills configuration first (handles Node.js core module polyfills)
-const wdkConfig = configureMetroForWDK(config);
+const originalResolveRequest = resolver.resolveRequest;
 
-// Now wrap the WDK's resolveRequest with our custom alias logic
-const wdkResolveRequest = wdkConfig.resolver.resolveRequest;
-
-wdkConfig.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Handle @/ alias
+config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName.startsWith('@/')) {
     const resolvedPath = moduleName.replace('@/', path.resolve(__dirname, 'src') + '/');
     try {
       return context.resolveRequest(context, resolvedPath, platform);
     } catch (e) {
-      // If the resolved path fails, fall through to WDK resolver
+      // Fall through to default resolver
     }
   }
 
-  // Delegate to WDK's resolveRequest
-  return wdkResolveRequest(context, moduleName, platform);
+  if (config.resolver.extraNodeModules[moduleName]) {
+    return {
+      filePath: config.resolver.extraNodeModules[moduleName],
+      type: 'sourceFile',
+    };
+  }
+
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform);
+  }
+
+  return context.resolveRequest(context, moduleName, platform);
 };
 
-module.exports = wdkConfig;
+module.exports = config;
