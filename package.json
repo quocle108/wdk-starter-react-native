@@ -113,5 +113,8 @@
   "peerDependencies": {
     "react": "19.1.0",
     "react-native": "0.81.4"
+  },
+  "overrides": {
+    "@wdk-safe-global/relay-kit": "npm:@jonpdunne/relay-kit@4.1.2"
   }
 }

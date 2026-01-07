@@ -1,5 +1,6 @@
 import { Buffer } from '@craftzdog/react-native-buffer';
-global.Buffer = Buffer;
+// @ts-ignore - Buffer polyfill for @ton/core compatibility
+global.Buffer = Buffer as unknown as BufferConstructor;
 
 import { DarkTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { WdkAppProvider } from '@tetherto/wdk-react-native-core';
