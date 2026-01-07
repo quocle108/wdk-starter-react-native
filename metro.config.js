@@ -4,10 +4,24 @@ const path = require('path');
 const config = getDefaultConfig(__dirname);
 
 // Watch folders for local file: dependencies
-config.watchFolders = [
+const localPackages = [
   path.resolve(__dirname, '..', 'dario-wdk-react-native-core'),
   path.resolve(__dirname, '..', 'pear-wrk-wdk'),
 ];
+
+config.watchFolders = localPackages;
+
+// Ensure all modules resolve from this project's node_modules
+const nodeModulesPath = path.resolve(__dirname, 'node_modules');
+config.resolver = {
+  ...config.resolver,
+  nodeModulesPaths: [nodeModulesPath],
+  // Block local packages' node_modules to avoid duplicate dependencies
+  blockList: [
+    new RegExp(path.resolve(__dirname, '..', 'dario-wdk-react-native-core', 'node_modules').replace(/[/\\]/g, '[/\\\\]') + '.*'),
+    new RegExp(path.resolve(__dirname, '..', 'pear-wrk-wdk', 'node_modules').replace(/[/\\]/g, '[/\\\\]') + '.*'),
+  ],
+};
 
 const { transformer, resolver } = config;
 
