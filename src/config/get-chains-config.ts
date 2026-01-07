@@ -7,7 +7,8 @@ const getChainsConfig = () => {
       bundlerUrl: 'https://api.candide.dev/public/v3/sepolia',
       paymasterUrl: 'https://api.candide.dev/public/v3/sepolia',
       paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      safeModulesVersion: '0.3.0',
       transferMaxFee: 100000,
     },
     plasma: {
@@ -17,7 +18,8 @@ const getChainsConfig = () => {
       bundlerUrl: 'https://api.candide.dev/public/v3/9745',
       paymasterUrl: 'https://api.candide.dev/public/v3/9745',
       paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      safeModulesVersion: '0.3.0',
       transferMaxFee: 100000,
     },
     spark: {
@@ -32,13 +34,12 @@ const getChainsConfig = () => {
       bundlerUrl: 'https://api.candide.dev/public/v3/ethereum',
       paymasterUrl: 'https://api.candide.dev/public/v3/ethereum',
       paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
-      transferMaxFee: 5000000,
-      swapMaxFee: 5000000,
-      bridgeMaxFee: 5000000,
+      entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      safeModulesVersion: '0.3.0',
       paymasterToken: {
         address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
       },
+      transferMaxFee: 100000,
     },
     arbitrum: {
       chainId: 42161,
@@ -47,13 +48,12 @@ const getChainsConfig = () => {
       bundlerUrl: 'https://api.candide.dev/public/v3/arbitrum',
       paymasterUrl: 'https://api.candide.dev/public/v3/arbitrum',
       paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
-      transferMaxFee: 5000000,
-      swapMaxFee: 5000000,
-      bridgeMaxFee: 5000000,
+      entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+      safeModulesVersion: '0.3.0',
       paymasterToken: {
         address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
       },
+      transferMaxFee: 100000,
     },
     polygon: {
       chainId: 137,
@@ -62,14 +62,12 @@ const getChainsConfig = () => {
       bundlerUrl: 'https://api.candide.dev/public/v3/polygon',
       paymasterUrl: 'https://api.candide.dev/public/v3/polygon',
       paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-      entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
-      transferMaxFee: 5000000,
-      swapMaxFee: 5000000,
-      bridgeMaxFee: 5000000,
-      paymasterToken: {
-        address: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
-      },
+      entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
       safeModulesVersion: '0.3.0',
+      paymasterToken: {
+        address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+      },
+      transferMaxFee: 100000,
     },
   };
 };
