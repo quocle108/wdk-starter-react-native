@@ -71,42 +71,6 @@ const getChainsConfig = () => {
       },
       safeModulesVersion: '0.3.0',
     },
-    ton: {
-      chainId: 239,
-      blockchain: 'ton',
-      tonApiClient: {
-        url: 'https://tonapi.io',
-      },
-      tonClient: {
-        url: 'https://toncenter.com/api/v2/jsonRPC',
-      },
-      paymasterToken: {
-        address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
-      },
-      transferMaxFee: 1000000000,
-    },
-    bitcoin: {
-      chainId: 1,
-      blockchain: 'bitcoin',
-      host: 'api.ordimint.com',
-      port: 50001,
-    },
-    tron: {
-      chainId: 3448148188,
-      blockchain: 'tron',
-      provider: 'https://trongrid.io',
-      gasFreeProvider: 'https://gasfree.io',
-      apiKey: process.env.EXPO_PUBLIC_TRON_API_KEY!,
-      apiSecret: process.env.EXPO_PUBLIC_TRON_API_SECRET!,
-      serviceProvider: 'TKtWbdzEq5ss9vTS9kwRhBp5mXmBfBns3E',
-      verifyingContract: 'THQGuFzL87ZqhxkgqYEryRAd7gqFqL5rdc',
-      transferMaxFee: 10000000,
-      swapMaxFee: 1000000,
-      bridgeMaxFee: 1000000,
-      paymasterToken: {
-        address: 'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
-      },
-    },
   };
 };
 

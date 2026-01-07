@@ -33,18 +33,6 @@ const getTokenConfigs = (): TokenConfigs => {
         { address: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
       ],
     },
-    ton: {
-      native: { address: null, symbol: 'TON', name: 'Toncoin', decimals: 9 },
-      tokens: [],
-    },
-    bitcoin: {
-      native: { address: null, symbol: 'BTC', name: 'Bitcoin', decimals: 8 },
-      tokens: [],
-    },
-    tron: {
-      native: { address: null, symbol: 'TRX', name: 'Tron', decimals: 6 },
-      tokens: [],
-    },
   };
 };
 
