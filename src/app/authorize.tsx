@@ -1,17 +1,16 @@
-import { useWallet } from '@tetherto/wdk-react-native-provider';
+import { useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import { Fingerprint, Shield } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import parseWorkletError from '@/utils/parse-worklet-error';
 import { colors } from '@/constants/colors';
 import getErrorMessage from '@/utils/get-error-message';
 
 export default function AuthorizeScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { wallet, unlockWallet } = useWallet();
+  const { hasWallet, initializeWallet } = useWalletManager();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +20,7 @@ export default function AuthorizeScreen() {
   }, []);
 
   const handleAuthorize = async () => {
-    if (!wallet) {
+    if (!hasWallet) {
       Alert.alert('Error', 'No wallet found');
       router.replace('/onboarding');
       return;
@@ -31,10 +30,8 @@ export default function AuthorizeScreen() {
     setError(null);
 
     try {
-      const isDone = await unlockWallet();
-      if (isDone) {
-        router.replace('/wallet');
-      }
+      await initializeWallet();
+      router.replace('/wallet');
     } catch (error) {
       console.error('Failed to unlock wallet:', error);
       setError(getErrorMessage(error, 'Failed to unlock wallet'));
