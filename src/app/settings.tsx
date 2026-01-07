@@ -11,28 +11,45 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
+import getChainsConfig from '@/config/get-chains-config';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { addresses } = useWallet();
+  const { addresses, getAddress } = useWallet();
   const { deleteWallet } = useWalletManager();
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (addresses) {
+    const fetchAddresses = async () => {
       const addressMap: Record<string, string> = {};
-      Object.entries(addresses).forEach(([network, addressData]) => {
-        if (addressData && typeof addressData === 'object' && 'address' in addressData) {
-          addressMap[network] = (addressData as { address: string }).address;
-        } else if (typeof addressData === 'string') {
-          addressMap[network] = addressData;
+      if (addresses && Object.keys(addresses).length > 0) {
+        Object.entries(addresses).forEach(([network, accountAddresses]) => {
+          if (accountAddresses && typeof accountAddresses === 'object') {
+            const firstAddress = accountAddresses[0];
+            if (firstAddress) {
+              addressMap[network] = firstAddress;
+            }
+          }
+        });
+      } else {
+        const networks = Object.keys(getChainsConfig());
+        for (const network of networks) {
+          try {
+            const address = await getAddress(network, 0);
+            if (address) {
+              addressMap[network] = address;
+            }
+          } catch (err) {
+            console.log(`Failed to get address for ${network}:`, err);
+          }
         }
-      });
+      }
       setWalletAddresses(addressMap);
-    }
-  }, [addresses]);
+    };
+    fetchAddresses();
+  }, [addresses, getAddress]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
