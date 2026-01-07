@@ -1,6 +1,6 @@
 import { useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
-import { Fingerprint, Shield } from 'lucide-react-native';
+import { Fingerprint, Shield, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,7 +10,7 @@ import getErrorMessage from '@/utils/get-error-message';
 export default function AuthorizeScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { hasWallet, initializeWallet } = useWalletManager();
+  const { hasWallet, initializeWallet, deleteWallet } = useWalletManager();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +45,31 @@ export default function AuthorizeScreen() {
     handleAuthorize();
   };
 
+  const handleResetWallet = () => {
+    Alert.alert(
+      'Reset Wallet',
+      'This will delete all wallet data. You will need to create or import a wallet again. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              await deleteWallet();
+              router.replace('/onboarding');
+            } catch (err) {
+              setError(getErrorMessage(err, 'Failed to reset wallet'));
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
@@ -77,6 +102,17 @@ export default function AuthorizeScreen() {
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
+        )}
+
+        {error && (
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={handleResetWallet}
+            disabled={isLoading}
+          >
+            <Trash2 size={20} color={colors.danger} />
+            <Text style={styles.resetButtonText}>Reset Wallet</Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -168,6 +204,19 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 14,
     textAlign: 'center',
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    padding: 12,
+  },
+  resetButtonText: {
+    color: colors.danger,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   footer: {
     paddingHorizontal: 40,
