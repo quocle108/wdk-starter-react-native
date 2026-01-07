@@ -1,5 +1,5 @@
 import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useWallet } from '@tetherto/wdk-react-native-provider';
+import { useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -10,27 +10,24 @@ export default function CompleteScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ walletName: string; mnemonic: string }>();
-  const { createWallet, isLoading } = useWallet();
+  const { initializeFromMnemonic } = useWalletManager();
   const [walletCreated, setWalletCreated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Auto-create wallet when screen loads
     createWalletWithWDK();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createWalletWithWDK = async () => {
-    if (walletCreated) return;
+    if (walletCreated || isLoading) return;
 
+    setIsLoading(true);
     try {
       const walletName = params.walletName || 'My Wallet';
       const mnemonic = params.mnemonic.split(',').join(' ');
 
-      // Use the wallet context to create the wallet
-      await createWallet({
-        name: walletName,
-        mnemonic,
-      });
+      await initializeFromMnemonic(mnemonic, walletName);
 
       setWalletCreated(true);
     } catch (error) {
@@ -40,6 +37,8 @@ export default function CompleteScreen() {
         'There was an issue creating your wallet. Please try again.',
         [{ text: 'Retry', onPress: () => createWalletWithWDK() }]
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,7 +47,6 @@ export default function CompleteScreen() {
       Alert.alert('Please Wait', 'Wallet is still being created...');
       return;
     }
-    // Reset navigation stack completely - only wallet screen will remain
     navigation.dispatch(
       CommonActions.reset({
         index: 0,

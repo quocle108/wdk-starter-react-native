@@ -1,4 +1,4 @@
-import { useWallet } from '@tetherto/wdk-react-native-provider';
+import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -6,7 +6,8 @@ import { pricingService } from '../services/pricing-service';
 import { colors } from '@/constants/colors';
 
 export default function Index() {
-  const { wallet, isInitialized, isUnlocked } = useWallet();
+  const { isInitialized } = useWallet();
+  const { hasWallet } = useWalletManager();
   const [isPricingReady, setIsPricingReady] = useState(false);
 
   const initializePricing = async () => {
@@ -15,7 +16,6 @@ export default function Index() {
       setIsPricingReady(true);
     } catch (error) {
       console.error('Failed to initialize pricing service:', error);
-      // Still set to true to allow app to continue even if pricing fails
       setIsPricingReady(true);
     }
   };
@@ -24,8 +24,7 @@ export default function Index() {
     initializePricing();
   }, []);
 
-  // Show loading indicator while WDK and pricing service are being initialized
-  if (!isInitialized || !isPricingReady) {
+  if (!isPricingReady) {
     return (
       <View
         style={{
@@ -40,12 +39,9 @@ export default function Index() {
     );
   }
 
-  // Redirect based on wallet existence and unlock status
-  if (!wallet) {
+  if (!hasWallet) {
     return <Redirect href="/onboarding" />;
   }
 
-  // If wallet exists but is not unlocked, go to authorization
-  // If wallet is already unlocked (e.g., just created/imported), go directly to wallet
-  return <Redirect href={isUnlocked ? '/wallet' : '/authorize'} />;
+  return <Redirect href={isInitialized ? '/wallet' : '/authorize'} />;
 }
