@@ -1,3 +1,6 @@
+import { Buffer } from '@craftzdog/react-native-buffer';
+global.Buffer = Buffer;
+
 import { DarkTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { WdkAppProvider } from '@tetherto/wdk-react-native-core';
 import { ThemeProvider } from '@tetherto/wdk-uikit-react-native';
