@@ -13,12 +13,6 @@ config.watchFolders = localPackages;
 
 const nodeModulesPath = path.resolve(__dirname, 'node_modules');
 
-// Block local packages' node_modules to avoid duplicate dependencies
-const blockList = [
-  new RegExp(path.resolve(__dirname, '..', 'dario-wdk-react-native-core', 'node_modules').replace(/[/\\]/g, '[/\\\\]') + '.*'),
-  new RegExp(path.resolve(__dirname, '..', 'pear-wrk-wdk', 'node_modules').replace(/[/\\]/g, '[/\\\\]') + '.*'),
-];
-
 // Node.js polyfills
 const extraNodeModules = {
   stream: require.resolve('stream-browserify'),
@@ -45,7 +39,6 @@ config.resolver = {
   assetExts: resolver.assetExts.filter(ext => ext !== 'svg'),
   sourceExts: [...resolver.sourceExts, 'svg'],
   nodeModulesPaths: [nodeModulesPath],
-  blockList,
   extraNodeModules,
   alias: {
     '@': path.resolve(__dirname, 'src'),
