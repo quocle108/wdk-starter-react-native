@@ -24,28 +24,25 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchAddresses = async () => {
       const addressMap: Record<string, string> = {};
-      if (addresses && Object.keys(addresses).length > 0) {
-        Object.entries(addresses).forEach(([network, accountAddresses]) => {
-          if (accountAddresses && typeof accountAddresses === 'object') {
-            const firstAddress = accountAddresses[0];
-            if (firstAddress) {
-              addressMap[network] = firstAddress;
-            }
-          }
-        });
-      } else {
-        const networks = Object.keys(getChainsConfig());
-        for (const network of networks) {
+      const networks = Object.keys(getChainsConfig());
+
+      await Promise.all(
+        networks.map(async (network) => {
           try {
-            const address = await getAddress(network, 0);
-            if (address) {
-              addressMap[network] = address;
+            if (addresses?.[network]?.[0]) {
+              addressMap[network] = addresses[network][0];
+            } else {
+              const address = await getAddress(network, 0);
+              if (address) {
+                addressMap[network] = address;
+              }
             }
           } catch (err) {
             console.log(`Failed to get address for ${network}:`, err);
           }
-        }
-      }
+        })
+      );
+
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
