@@ -1,5 +1,4 @@
-import { networkConfigs } from '@/config/networks';
-import { NetworkType } from '@tetherto/wdk-react-native-provider';
+import { networkConfigs, NetworkType } from '@/config/networks';
 import { Address } from '@ton/core';
 import WAValidator from 'multicoin-address-validator';
 
@@ -12,9 +11,6 @@ export function getAddressValidatorForNetwork(
   return networkConfigs[networkId]?.addressValidator;
 }
 
-/**
- * EVM: Ethereum / Polygon / Arbitrum
- */
 export function validateEvmAddress(address: string): AddressValidationResult {
   const isValid = WAValidator.validate(address, 'eth');
 
@@ -28,9 +24,6 @@ export function validateEvmAddress(address: string): AddressValidationResult {
   return { valid: true };
 }
 
-/**
- * Bitcoin
- */
 export function validateBitcoinAddress(address: string): AddressValidationResult {
   const isValid = WAValidator.validate(address, 'btc');
 
@@ -44,9 +37,6 @@ export function validateBitcoinAddress(address: string): AddressValidationResult
   return { valid: true };
 }
 
-/**
- * TON: @ton/core Address.parse
- */
 export function validateTonAddress(address: string): AddressValidationResult {
   try {
     Address.parse(address);
@@ -59,9 +49,6 @@ export function validateTonAddress(address: string): AddressValidationResult {
   }
 }
 
-/**
- * Tron
- */
 export function validateTronAddress(address: string): AddressValidationResult {
   const isValid = WAValidator.validate(address, 'trx');
 
@@ -75,9 +62,6 @@ export function validateTronAddress(address: string): AddressValidationResult {
   return { valid: true };
 }
 
-/**
- * Solana
- */
 export function validateSolanaAddress(address: string): AddressValidationResult {
   const isValidFormat = WAValidator.validate(address, 'sol');
 

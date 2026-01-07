@@ -1,4 +1,3 @@
-import { NetworkType } from '@tetherto/wdk-react-native-provider';
 import {
   validateEvmAddress,
   validateBitcoinAddress,
@@ -7,6 +6,16 @@ import {
   validateSolanaAddress,
   AddressValidator,
 } from '@/utils/address-validators';
+
+export type NetworkType =
+  | 'ethereum'
+  | 'polygon'
+  | 'arbitrum'
+  | 'ton'
+  | 'tron'
+  | 'solana'
+  | 'bitcoin'
+  | 'lightning';
 
 export interface Network {
   id: string;
@@ -19,7 +28,7 @@ export interface Network {
 }
 
 export const networkConfigs: Record<NetworkType, Network> = {
-  [NetworkType.ETHEREUM]: {
+  ethereum: {
     id: 'ethereum',
     name: 'Ethereum',
     gasLevel: 'High',
@@ -28,7 +37,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#627EEA',
     addressValidator: validateEvmAddress,
   },
-  [NetworkType.POLYGON]: {
+  polygon: {
     id: 'polygon',
     name: 'Polygon',
     gasLevel: 'Low',
@@ -37,7 +46,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#8247E5',
     addressValidator: validateEvmAddress,
   },
-  [NetworkType.ARBITRUM]: {
+  arbitrum: {
     id: 'arbitrum',
     name: 'Arbitrum',
     gasLevel: 'Normal',
@@ -46,7 +55,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#28A0F0',
     addressValidator: validateEvmAddress,
   },
-  [NetworkType.TON]: {
+  ton: {
     id: 'ton',
     name: 'TON',
     gasLevel: 'Low',
@@ -55,7 +64,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#0088CC',
     addressValidator: validateTonAddress,
   },
-  [NetworkType.TRON]: {
+  tron: {
     id: 'tron',
     name: 'Tron',
     gasLevel: 'Low',
@@ -64,7 +73,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#FF060A',
     addressValidator: validateTronAddress,
   },
-  [NetworkType.SOLANA]: {
+  solana: {
     id: 'solana',
     name: 'Solana',
     gasLevel: 'Low',
@@ -73,7 +82,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#9945FF',
     addressValidator: validateSolanaAddress,
   },
-  [NetworkType.BITCOIN]: {
+  bitcoin: {
     id: 'bitcoin',
     name: 'Bitcoin',
     gasLevel: 'Normal',
@@ -82,7 +91,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#F7931A',
     addressValidator: validateBitcoinAddress,
   },
-  [NetworkType.LIGHTNING]: {
+  lightning: {
     id: 'lightning',
     name: 'Lightning',
     gasLevel: 'Low',
