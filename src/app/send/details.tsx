@@ -1,6 +1,7 @@
 import { AssetTicker } from '@/config/assets';
 import { NetworkType } from '@/config/networks';
-import { useRefreshBalance } from '@tetherto/wdk-react-native-core';
+import { useRefreshBalance, useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
+import getTokenConfigs from '@/config/get-token-configs';
 import { CryptoAddressInput } from '@tetherto/wdk-uikit-react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
@@ -43,6 +44,10 @@ export default function SendDetailsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
   const { mutate: refreshBalance } = useRefreshBalance();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
+  const { callAccountMethod } = useWallet({ walletId: currentWalletId });
+  const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const params = useLocalSearchParams();
   const scrollViewRef = useRef<ScrollView>(null);
   const amountSectionYPosition = useRef<number>(0);
@@ -379,19 +384,46 @@ export default function SendDetailsScreen() {
         numericAmount = numericAmount / tokenPrice;
       }
 
-      Alert.alert(
-        'Send Not Supported',
-        'Transaction sending is not yet available in this version. Amount: ' +
-          numericAmount.toFixed(6) +
-          ' ' +
-          tokenSymbol +
-          ' to ' +
-          recipientAddress.slice(0, 10) +
-          '...',
-        [{ text: 'OK' }]
+      // Get token configuration for this network
+      const networkTokenConfig = tokenConfigs[networkId];
+      let tokenAddress: string | null = null;
+      let decimals = 18;
+
+      // Check if it's a native token or ERC20 token
+      if (networkTokenConfig) {
+        const isNativeToken = networkTokenConfig.native.symbol.toLowerCase() === tokenId.toLowerCase();
+        if (isNativeToken) {
+          tokenAddress = null;
+          decimals = networkTokenConfig.native.decimals;
+        } else {
+          const tokenConfig = networkTokenConfig.tokens.find(
+            (t) => t.symbol.toLowerCase() === tokenId.toLowerCase()
+          );
+          if (tokenConfig) {
+            tokenAddress = tokenConfig.address;
+            decimals = tokenConfig.decimals;
+          }
+        }
+      }
+
+      // Convert amount to smallest unit (wei/satoshi/etc)
+      const amountInSmallestUnit = BigInt(Math.floor(numericAmount * Math.pow(10, decimals)));
+
+      // Call the transfer method on the account
+      const result = await callAccountMethod<{ fee: string; hash: string }>(
+        networkId,
+        0,
+        'transfer',
+        {
+          to: recipientAddress,
+          amount: amountInSmallestUnit.toString(),
+          tokenAddress,
+        }
       );
 
-      setTransactionResult({ error: 'Send not supported in current SDK version' });
+      setTransactionResult({ txId: result });
+      setShowConfirmation(true);
+      toast.success('Transaction sent successfully!');
     } catch (error) {
       console.error('Transaction failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
@@ -411,6 +443,10 @@ export default function SendDetailsScreen() {
     refreshBalance,
     inputMode,
     tokenPrice,
+    networkId,
+    tokenId,
+    tokenConfigs,
+    callAccountMethod,
   ]);
 
   const handleConfirmSend = useCallback(async () => {
