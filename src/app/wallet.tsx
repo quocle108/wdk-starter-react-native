@@ -2,6 +2,7 @@ import { BalanceLoader } from '@/components/BalanceLoader';
 import { useWallet, useWalletManager, useBalancesForWallet, useRefreshBalance } from '@tetherto/wdk-react-native-core';
 import { Balance } from '@tetherto/wdk-uikit-react-native';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
+import { useFocusEffect } from 'expo-router';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -11,7 +12,7 @@ import {
   Shield,
   Star,
 } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -231,6 +232,16 @@ export default function WalletScreen() {
       setMounted(true);
     });
   }, []);
+
+  // Refresh balances when screen comes into focus (e.g., after sending)
+  useFocusEffect(
+    useCallback(() => {
+      if (isInitialized && networkModeLoaded) {
+        refreshBalance({ accountIndex: 0, type: 'wallet' });
+        refetch();
+      }
+    }, [isInitialized, networkModeLoaded, refreshBalance, refetch])
+  );
 
   return (
     <View style={styles.container}>
