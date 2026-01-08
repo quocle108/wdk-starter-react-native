@@ -11,7 +11,7 @@ import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } f
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
-import getChainsConfig from '@/config/get-chains-config';
+import getChainsConfig, { SparkNetworkMode } from '@/config/get-chains-config';
 import { getNetworkMode, setNetworkMode, NetworkMode, getNetworksForMode } from '@/services/network-mode-service';
 
 export default function SettingsScreen() {
@@ -30,15 +30,18 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
+      const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
+      const allowedNetworks = getNetworksForMode(networkMode);
+
       console.log('[Settings] === Starting fetchAddresses ===');
+      console.log('[Settings] networkMode:', networkMode, 'sparkNetwork:', sparkNetwork);
+      console.log('[Settings] allowedNetworks:', allowedNetworks);
       console.log('[Settings] addresses from hook:', JSON.stringify(addresses, null, 2));
 
       const addressMap: Record<string, string> = {};
-      const networks = Object.keys(getChainsConfig());
-      console.log('[Settings] Networks to process:', networks);
 
-      // Process networks sequentially to see where it hangs
-      for (const network of networks) {
+      // Only process networks allowed for current mode
+      for (const network of allowedNetworks) {
         console.log(`[Settings] Processing network: ${network}`);
         try {
           const addressData = addresses?.[network];
@@ -49,22 +52,25 @@ export default function SettingsScreen() {
           if (addressData) {
             if (typeof addressData === 'string') {
               address = addressData;
-              console.log(`[Settings] ${network} - found string address`);
             } else if (Array.isArray(addressData) && addressData[0]) {
               address = addressData[0];
-              console.log(`[Settings] ${network} - found array address`);
             } else if (typeof addressData === 'object' && addressData['0']) {
               address = addressData['0'];
-              console.log(`[Settings] ${network} - found object address`);
             }
           }
 
-          // If no address found, try to derive it
+          // If no address found, try to derive it with timeout (spark can hang)
           if (!address) {
-            console.log(`[Settings] ${network} - No cached address, calling getAddress...`);
+            console.log(`[Settings] ${network} - No cached address, calling getAddress with 10s timeout...`);
             const startTime = Date.now();
             try {
-              address = await getAddress(network, 0);
+              const timeoutPromise = new Promise<undefined>((_, reject) =>
+                setTimeout(() => reject(new Error(`Timeout deriving ${network} address`)), 10000)
+              );
+              address = await Promise.race([
+                getAddress(network, 0),
+                timeoutPromise
+              ]);
               console.log(`[Settings] ${network} - getAddress returned in ${Date.now() - startTime}ms:`, address);
             } catch (deriveError) {
               console.error(`[Settings] ${network} - getAddress ERROR after ${Date.now() - startTime}ms:`, deriveError);
@@ -86,7 +92,7 @@ export default function SettingsScreen() {
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
-  }, [addresses, getAddress]);
+  }, [addresses, getAddress, networkMode]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
