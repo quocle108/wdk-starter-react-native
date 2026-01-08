@@ -11,7 +11,7 @@ import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } f
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
-import getChainsConfig from '@/config/get-chains-config';
+import getChainsConfig, { SparkNetworkMode } from '@/config/get-chains-config';
 import { getNetworkMode, setNetworkMode, NetworkMode, getNetworksForMode } from '@/services/network-mode-service';
 
 export default function SettingsScreen() {
@@ -31,7 +31,9 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchAddresses = async () => {
       const addressMap: Record<string, string> = {};
-      const networks = Object.keys(getChainsConfig());
+      // Get networks filtered by current network mode
+      const sparkNetwork = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
+      const networks = Object.keys(getChainsConfig(sparkNetwork, networkMode));
 
       await Promise.all(
         networks.map(async (network) => {
@@ -53,7 +55,7 @@ export default function SettingsScreen() {
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
-  }, [addresses, getAddress]);
+  }, [addresses, getAddress, networkMode]);
 
   const handleDeleteWallet = () => {
     Alert.alert(

@@ -16,7 +16,7 @@ import getChainsConfig, { SparkNetworkMode } from '@/config/get-chains-config';
 import getTokenConfigs from '@/config/get-token-configs';
 import { Toaster } from 'sonner-native';
 import { colors } from '@/constants/colors';
-import { getNetworkMode } from '@/services/network-mode-service';
+import { getNetworkMode, NetworkMode } from '@/services/network-mode-service';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,11 +31,13 @@ const CustomDarkTheme = {
 
 export default function RootLayout() {
   const [sparkNetwork, setSparkNetwork] = useState<SparkNetworkMode>('MAINNET');
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       const mode = await getNetworkMode();
+      setNetworkMode(mode);
       setSparkNetwork(mode === 'testnet' ? 'TESTNET' : 'MAINNET');
       setIsReady(true);
       SplashScreen.hideAsync();
@@ -56,8 +58,8 @@ export default function RootLayout() {
         }}
       >
         <WdkAppProvider
-          networkConfigs={getChainsConfig(sparkNetwork)}
-          tokenConfigs={getTokenConfigs()}
+          networkConfigs={getChainsConfig(sparkNetwork, networkMode)}
+          tokenConfigs={getTokenConfigs(networkMode)}
         >
           <NavigationThemeProvider value={CustomDarkTheme}>
             <View style={{ flex: 1, backgroundColor: colors.background }}>

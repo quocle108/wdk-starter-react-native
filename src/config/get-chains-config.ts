@@ -1,7 +1,26 @@
+import { NetworkMode } from '@/services/network-mode-service';
+
 export type SparkNetworkMode = 'MAINNET' | 'TESTNET';
 
-const getChainsConfig = (sparkNetwork: SparkNetworkMode = 'MAINNET') => {
-  return {
+type ChainConfig = {
+  chainId: number;
+  blockchain: string;
+  provider?: string;
+  bundlerUrl?: string;
+  paymasterUrl?: string;
+  paymasterAddress?: string;
+  entryPointAddress?: string;
+  safeModulesVersion?: string;
+  paymasterToken?: { address: string };
+  transferMaxFee?: number;
+  network?: SparkNetworkMode;
+};
+
+const MAINNET_CHAINS: string[] = ['ethereum', 'polygon', 'arbitrum', 'spark', 'plasma'];
+const TESTNET_CHAINS: string[] = ['sepolia', 'spark'];
+
+const getChainsConfig = (sparkNetwork: SparkNetworkMode = 'MAINNET', networkMode?: NetworkMode): Record<string, ChainConfig> => {
+  const allChains: Record<string, ChainConfig> = {
     sepolia: {
       chainId: 11155111,
       blockchain: 'sepolia',
@@ -75,6 +94,17 @@ const getChainsConfig = (sparkNetwork: SparkNetworkMode = 'MAINNET') => {
       transferMaxFee: 100000,
     },
   };
+
+  // If no network mode specified, return all chains
+  if (!networkMode) {
+    return allChains;
+  }
+
+  // Filter chains by network mode
+  const allowedChains = networkMode === 'testnet' ? TESTNET_CHAINS : MAINNET_CHAINS;
+  return Object.fromEntries(
+    Object.entries(allChains).filter(([key]) => allowedChains.includes(key))
+  ) as Record<string, ChainConfig>;
 };
 
 export default getChainsConfig;
