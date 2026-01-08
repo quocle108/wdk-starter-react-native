@@ -524,10 +524,22 @@ export default function SendDetailsScreen() {
     return formatTokenAmount(value, token);
   };
 
-  const getExplorerUrl = (txHash: string, network: string): string | null => {
+  const getExplorerUrl = (hash: string, network: string): string | null => {
     const networkConfig = networkConfigs[network as NetworkType];
-    if (!networkConfig?.explorerUrl) return null;
-    return `${networkConfig.explorerUrl}${txHash}`;
+    if (!networkConfig) return null;
+
+    // For ERC-4337 networks (Safe smart wallets), use UserOp explorer
+    // The hash returned is a userOperationHash, not a regular tx hash
+    if (networkConfig.userOpExplorerUrl) {
+      return `${networkConfig.userOpExplorerUrl}${hash}`;
+    }
+
+    // Fallback to regular explorer for non-ERC-4337 networks
+    if (networkConfig.explorerUrl) {
+      return `${networkConfig.explorerUrl}${hash}`;
+    }
+
+    return null;
   };
 
   const handleOpenExplorer = useCallback(() => {
@@ -719,7 +731,11 @@ export default function SendDetailsScreen() {
 
             {transactionResult?.txId?.hash && (
               <TouchableOpacity onPress={handleOpenExplorer} style={styles.txHashContainer}>
-                <Text style={styles.txHashLabel}>Transaction Hash:</Text>
+                <Text style={styles.txHashLabel}>
+                  {networkConfigs[networkId as NetworkType]?.userOpExplorerUrl
+                    ? 'UserOperation Hash:'
+                    : 'Transaction Hash:'}
+                </Text>
                 <Text style={styles.txHashValue} numberOfLines={1} ellipsizeMode="middle">
                   {transactionResult.txId.hash}
                 </Text>

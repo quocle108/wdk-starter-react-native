@@ -15,6 +15,7 @@ export interface Network {
   color: string;
   addressValidator?: AddressValidator;
   explorerUrl?: string;
+  userOpExplorerUrl?: string;
 }
 
 export const networkConfigs: Record<NetworkType, Network> = {
@@ -27,6 +28,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#627EEA',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://etherscan.io/tx/',
+    userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
   },
   polygon: {
     id: 'polygon',
@@ -37,6 +39,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#8247E5',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://polygonscan.com/tx/',
+    userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
   },
   arbitrum: {
     id: 'arbitrum',
@@ -47,6 +50,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#28A0F0',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://arbiscan.io/tx/',
+    userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
   },
   spark: {
     id: 'spark',
@@ -76,5 +80,6 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#627EEA',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://sepolia.etherscan.io/tx/',
+    userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
   },
 };
