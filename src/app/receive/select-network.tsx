@@ -58,14 +58,12 @@ export default function ReceiveSelectNetworkScreen() {
           const network = networkConfigs[networkType];
           let address: string | undefined;
 
-          // Try to get address from addresses object first
           const addressData = addresses?.[networkType];
           if (Array.isArray(addressData) && addressData[0]) {
             address = addressData[0];
           } else if (typeof addressData === 'string') {
             address = addressData;
           } else {
-            // Fallback: fetch address using getAddress
             try {
               const fetchedAddress = await getAddress(networkType, 0);
               if (fetchedAddress) {
@@ -95,7 +93,7 @@ export default function ReceiveSelectNetworkScreen() {
   const handleSelectNetwork = useCallback(
     (network: NetworkOption) => {
       if (!network.hasAddress) {
-        return; // Don't allow selection if no address available
+        return;
       }
 
       router.push({
