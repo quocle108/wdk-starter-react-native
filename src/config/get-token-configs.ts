@@ -1,8 +1,8 @@
 import type { TokenConfigs } from '@tetherto/wdk-react-native-core';
 import { NetworkMode } from '@/services/network-mode-service';
 
-const MAINNET_NETWORKS = ['ethereum', 'polygon', 'arbitrum', 'spark', 'plasma'] as const;
-const TESTNET_NETWORKS = ['sepolia', 'spark'] as const;
+const MAINNET_NETWORKS: string[] = ['ethereum', 'polygon', 'arbitrum', 'spark', 'plasma'];
+const TESTNET_NETWORKS: string[] = ['sepolia', 'spark'];
 
 const ALL_TOKEN_CONFIGS: TokenConfigs = {
   sepolia: {
@@ -47,11 +47,13 @@ const getTokenConfigs = (networkMode?: NetworkMode): TokenConfigs => {
 
   const allowedNetworks = networkMode === 'testnet' ? TESTNET_NETWORKS : MAINNET_NETWORKS;
 
-  return Object.fromEntries(
-    Object.entries(ALL_TOKEN_CONFIGS).filter(([key]) =>
-      allowedNetworks.includes(key as (typeof allowedNetworks)[number])
-    )
+  const filtered = Object.fromEntries(
+    Object.entries(ALL_TOKEN_CONFIGS).filter(([key]) => allowedNetworks.includes(key))
   ) as TokenConfigs;
+
+  console.log('[getTokenConfigs] networkMode:', networkMode, 'networks:', Object.keys(filtered));
+
+  return filtered;
 };
 
 export default getTokenConfigs;
