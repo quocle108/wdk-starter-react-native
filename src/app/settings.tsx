@@ -30,8 +30,12 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
+      console.log('[Settings] fetchAddresses called');
+      console.log('[Settings] addresses from hook:', JSON.stringify(addresses));
+
       const addressMap: Record<string, string> = {};
       const networks = Object.keys(getChainsConfig());
+      console.log('[Settings] networks:', networks);
 
       await Promise.all(
         networks.map(async (network) => {
@@ -52,18 +56,21 @@ export default function SettingsScreen() {
 
             // If no address found, derive it
             if (!address) {
+              console.log(`[Settings] Deriving address for ${network}...`);
               address = await getAddress(network, 0);
+              console.log(`[Settings] Derived address for ${network}:`, address);
             }
 
             if (address) {
               addressMap[network] = address;
             }
           } catch (err) {
-            console.log(`Failed to get address for ${network}:`, err);
+            console.log(`[Settings] Failed to get address for ${network}:`, err);
           }
         })
       );
 
+      console.log('[Settings] Final addressMap:', JSON.stringify(addressMap));
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
