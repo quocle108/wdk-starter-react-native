@@ -15,7 +15,8 @@ export type NetworkType =
   | 'tron'
   | 'solana'
   | 'bitcoin'
-  | 'lightning';
+  | 'lightning'
+  | 'spark';
 
 export interface Network {
   id: string;
@@ -98,5 +99,14 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#34C759',
     icon: require('../../assets/images/chains/lightning-logo.png'),
     color: '#F7CA3E',
+  },
+  spark: {
+    id: 'spark',
+    name: 'Spark',
+    gasLevel: 'Low',
+    gasColor: '#34C759',
+    icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),
+    color: '#F7931A',
+    addressValidator: validateBitcoinAddress,
   },
 };
