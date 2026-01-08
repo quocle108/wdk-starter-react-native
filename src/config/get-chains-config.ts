@@ -14,7 +14,7 @@ const getChainsConfig = (sparkNetwork: SparkNetworkMode = 'MAINNET') => {
       paymasterToken: {
         address: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
       },
-      transferMaxFee: 100000,
+      transferMaxFee: 500000,
     },
     plasma: {
       chainId: 9745,

@@ -28,6 +28,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssetConfig, assetConfig, AssetTicker } from '../config/assets';
 import getTokenConfigs from '../config/get-token-configs';
 import { FiatCurrency, pricingService } from '../services/pricing-service';
+import { getNetworkMode, NetworkMode } from '../services/network-mode-service';
 import formatAmount from '@/utils/format-amount';
 import formatTokenAmount from '@/utils/format-token-amount';
 import useWalletAvatar from '@/hooks/use-wallet-avatar';
@@ -49,7 +50,13 @@ export default function WalletScreen() {
   const { isInitialized, addresses } = useWallet({ walletId: currentWalletId });
   const { mutate: refreshBalance } = useRefreshBalance();
 
-  const tokenConfigs = useMemo(() => getTokenConfigs(), []);
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+
+  useEffect(() => {
+    getNetworkMode().then(setNetworkMode);
+  }, []);
+
+  const tokenConfigs = useMemo(() => getTokenConfigs(networkMode), [networkMode]);
   const { data: balanceResults, isLoading: isLoadingBalances, refetch } = useBalancesForWallet(
     0,
     tokenConfigs,
