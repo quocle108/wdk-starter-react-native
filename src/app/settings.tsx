@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
 import getChainsConfig from '@/config/get-chains-config';
-import { getNetworkMode, setNetworkMode, NetworkMode } from '@/services/network-mode-service';
+import { getNetworkMode, setNetworkMode, NetworkMode, getNetworksForMode } from '@/services/network-mode-service';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -105,8 +105,16 @@ export default function SettingsScreen() {
   };
 
   const getNetworkName = (network: string) => {
+    if (network === 'spark' && networkMode === 'testnet') {
+      return 'Spark Testnet';
+    }
     return networkConfigs[network as NetworkType]?.name || network;
   };
+
+  const filteredAddresses = Object.entries(walletAddresses).filter(([network]) => {
+    const allowedNetworks = getNetworksForMode(networkMode);
+    return allowedNetworks.includes(network as NetworkType);
+  });
 
   const handleNetworkModeToggle = async (value: boolean) => {
     const newMode: NetworkMode = value ? 'testnet' : 'mainnet';
@@ -187,8 +195,8 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.addressCard}>
-            {Object.entries(walletAddresses).length > 0 ? (
-              Object.entries(walletAddresses).map(([network, address], index, array) => (
+            {filteredAddresses.length > 0 ? (
+              filteredAddresses.map(([network, address], index, array) => (
                 <TouchableOpacity
                   key={network}
                   style={[
