@@ -6,27 +6,25 @@ import { pricingService } from '../services/pricing-service';
 import { colors } from '@/constants/colors';
 
 export default function Index() {
-  const { wallets, activeWalletId } = useWalletManager();
-  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { wallets, activeWalletId, refreshWalletList } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { isInitialized } = useWallet({ walletId: currentWalletId });
-  const walletExists = wallets.length > 0;
-  const [isPricingReady, setIsPricingReady] = useState(false);
-
-  const initializePricing = async () => {
-    try {
-      await pricingService.initialize();
-      setIsPricingReady(true);
-    } catch (error) {
-      console.error('Failed to initialize pricing service:', error);
-      setIsPricingReady(true);
-    }
-  };
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    initializePricing();
-  }, []);
+    const initialize = async () => {
+      try {
+        await pricingService.initialize();
+      } catch (error) {
+        console.error('Failed to initialize pricing service:', error);
+      }
+      await refreshWalletList();
+      setIsReady(true);
+    };
+    initialize();
+  }, [refreshWalletList]);
 
-  if (!isPricingReady) {
+  if (!isReady) {
     return (
       <View
         style={{
@@ -40,6 +38,8 @@ export default function Index() {
       </View>
     );
   }
+
+  const walletExists = wallets.some(w => w.exists);
 
   if (!walletExists) {
     return <Redirect href="/onboarding" />;

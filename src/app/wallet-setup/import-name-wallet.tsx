@@ -42,7 +42,7 @@ export default function ImportNameWalletScreen() {
     setIsImporting(true);
 
     try {
-      await initializeFromMnemonic(seedPhrase, walletName);
+      await initializeFromMnemonic(seedPhrase, 'default');
       await setAvatar(selectedAvatar.id);
 
       toast.success('Your wallet has been imported successfully.');

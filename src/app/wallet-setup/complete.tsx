@@ -24,10 +24,9 @@ export default function CompleteScreen() {
 
     setIsLoading(true);
     try {
-      const walletName = params.walletName || 'My Wallet';
       const mnemonic = params.mnemonic.split(',').join(' ');
 
-      await initializeFromMnemonic(mnemonic, walletName);
+      await initializeFromMnemonic(mnemonic, 'default');
 
       setWalletCreated(true);
     } catch (error) {
