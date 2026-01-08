@@ -1,5 +1,5 @@
 import Header from '@/components/header';
-import { clearAvatar } from '@/config/avatar-options';
+import { clearAvatar, clearWalletName } from '@/config/avatar-options';
 import { networkConfigs, NetworkType } from '@/config/networks';
 import useWalletAvatar from '@/hooks/use-wallet-avatar';
 import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
@@ -17,7 +17,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId, deleteWallet } = useWalletManager();
-  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
@@ -63,8 +63,9 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteWallet();
+              await deleteWallet(currentWalletId);
               await clearAvatar();
+              await clearWalletName();
               toast.success('Wallet deleted successfully');
               router.dismissAll('/');
             } catch (error) {
