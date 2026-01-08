@@ -46,7 +46,7 @@ export default function SendDetailsScreen() {
   const { mutate: refreshBalance } = useRefreshBalance();
   const { wallets, activeWalletId } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { callAccountMethod } = useWallet({ walletId: currentWalletId });
+  const { callAccountMethod, isInitialized, addresses } = useWallet({ walletId: currentWalletId });
   const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const params = useLocalSearchParams();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -391,10 +391,25 @@ export default function SendDetailsScreen() {
 
       console.log('=== DEBUG: Transfer Setup ===');
       console.log('walletId:', currentWalletId);
+      console.log('isInitialized:', isInitialized);
+      console.log('addresses:', JSON.stringify(addresses, null, 2));
+      console.log('senderAddress (sepolia):', addresses?.sepolia?.[0]);
       console.log('networkId:', networkId);
       console.log('tokenId:', tokenId);
       console.log('tokenSymbol:', tokenSymbol);
       console.log('networkTokenConfig:', JSON.stringify(networkTokenConfig, null, 2));
+
+      if (!isInitialized) {
+        Alert.alert('Error', 'Wallet not ready. Please wait and try again.');
+        setSendingTransaction(false);
+        return;
+      }
+
+      if (!addresses?.[networkId]?.[0]) {
+        Alert.alert('Error', `No address found for network ${networkId}. Please wait for wallet to initialize.`);
+        setSendingTransaction(false);
+        return;
+      }
 
       // Check if it's a native token or ERC20 token
       if (networkTokenConfig) {
@@ -472,6 +487,9 @@ export default function SendDetailsScreen() {
     tokenId,
     tokenConfigs,
     callAccountMethod,
+    isInitialized,
+    addresses,
+    currentWalletId,
   ]);
 
   const handleConfirmSend = useCallback(async () => {
