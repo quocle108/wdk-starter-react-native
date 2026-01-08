@@ -41,7 +41,7 @@ export default function RootLayout() {
     const init = async () => {
       const mode = await getNetworkMode();
       setNetworkMode(mode);
-      setSparkNetwork(mode === 'testnet' ? 'TESTNET' : 'MAINNET');
+      setSparkNetwork(mode === 'testnet' ? 'REGTEST' : 'MAINNET');
       setIsReady(true);
       SplashScreen.hideAsync();
     };

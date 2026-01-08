@@ -1,6 +1,6 @@
 import { NetworkMode } from '@/services/network-mode-service';
 
-export type SparkNetworkMode = 'MAINNET' | 'TESTNET';
+export type SparkNetworkMode = 'MAINNET' | 'TESTNET' | 'REGTEST';
 
 type ChainConfig = {
   chainId: number;
