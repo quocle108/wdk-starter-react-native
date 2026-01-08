@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
+import { getNetworkMode, filterNetworksByMode, NetworkMode } from '@/services/network-mode-service';
 
 interface NetworkOption extends Network {
   address?: string;
@@ -21,6 +22,7 @@ const NETWORK_DESCRIPTIONS: Record<string, string> = {
   polygon: 'Polygon Network',
   arbitrum: 'Arbitrum One',
   spark: 'Spark Network',
+  'spark-testnet': 'Spark Testnet',
   plasma: 'Plasma Network',
   sepolia: 'Sepolia Testnet',
 };
@@ -41,6 +43,11 @@ export default function ReceiveSelectNetworkScreen() {
 
   const [networks, setNetworks] = useState<NetworkOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+
+  useEffect(() => {
+    getNetworkMode().then(setNetworkMode);
+  }, []);
 
   useEffect(() => {
     const fetchNetworks = async () => {
@@ -51,8 +58,10 @@ export default function ReceiveSelectNetworkScreen() {
         return;
       }
 
+      const filteredNetworks = filterNetworksByMode(tokenConfig.supportedNetworks, networkMode);
+
       const networksWithAddresses = await Promise.all(
-        tokenConfig.supportedNetworks.map(async (networkType: NetworkType) => {
+        filteredNetworks.map(async (networkType: NetworkType) => {
           const network = networkConfigs[networkType];
           let address: string | undefined;
 
@@ -86,7 +95,7 @@ export default function ReceiveSelectNetworkScreen() {
     };
 
     fetchNetworks();
-  }, [tokenId, addresses, getAddress]);
+  }, [tokenId, addresses, getAddress, networkMode]);
 
   const handleSelectNetwork = useCallback(
     (network: NetworkOption) => {

@@ -14,6 +14,7 @@ import getDisplaySymbol from '@/utils/get-display-symbol';
 import formatTokenAmount from '@/utils/format-token-amount';
 import Header from '@/components/header';
 import { colors } from '@/constants/colors';
+import { getNetworkMode, filterNetworksByMode, NetworkMode } from '@/services/network-mode-service';
 
 export default function SelectNetworkScreen() {
   const insets = useSafeAreaInsets();
@@ -32,6 +33,11 @@ export default function SelectNetworkScreen() {
   };
 
   const [networks, setNetworks] = useState<Network[]>([]);
+  const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
+
+  useEffect(() => {
+    getNetworkMode().then(setNetworkModeState);
+  }, []);
 
   useEffect(() => {
     const calculateNetworks = async () => {
@@ -41,6 +47,8 @@ export default function SelectNetworkScreen() {
         setNetworks([]);
         return;
       }
+
+      const filteredNetworks = filterNetworksByMode(tokenConfig.supportedNetworks, networkMode);
 
       const networkBalanceMap = new Map<string, number>();
 
@@ -73,7 +81,7 @@ export default function SelectNetworkScreen() {
       }
 
       const networksWithBalances = await Promise.all(
-        tokenConfig.supportedNetworks.map(async (networkType: NetworkType) => {
+        filteredNetworks.map(async (networkType: NetworkType) => {
           const network = networkConfigs[networkType];
           const balanceValue = networkBalanceMap.get(networkType) || 0;
 
@@ -97,7 +105,7 @@ export default function SelectNetworkScreen() {
     };
 
     calculateNetworks();
-  }, [tokenId, balanceResults, tokenConfigs]);
+  }, [tokenId, balanceResults, tokenConfigs, networkMode]);
 
   const handleSelectNetwork = useCallback(
     (network: Network) => {

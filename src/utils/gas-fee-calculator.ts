@@ -12,6 +12,7 @@ export const getNetworkType = (networkId: string): NetworkType => {
     polygon: 'polygon',
     arbitrum: 'arbitrum',
     spark: 'spark',
+    'spark-testnet': 'spark-testnet',
     plasma: 'plasma',
     sepolia: 'sepolia',
   };
@@ -39,6 +40,7 @@ export const calculateGasFee = async (
     polygon: 0.0001,
     arbitrum: 0.0001,
     spark: 0.00001,
+    'spark-testnet': 0.00001,
     plasma: 0.0001,
     sepolia: 0.001,
   };

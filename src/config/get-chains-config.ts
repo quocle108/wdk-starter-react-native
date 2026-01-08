@@ -27,6 +27,11 @@ const getChainsConfig = () => {
       blockchain: 'spark',
       network: 'MAINNET',
     },
+    'spark-testnet': {
+      chainId: 99998,
+      blockchain: 'spark-testnet',
+      network: 'TESTNET',
+    },
     ethereum: {
       chainId: 1,
       blockchain: 'ethereum',

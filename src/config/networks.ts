@@ -4,7 +4,7 @@ import {
   AddressValidator,
 } from '@/utils/address-validators';
 
-export type NetworkType = 'ethereum' | 'polygon' | 'arbitrum' | 'spark' | 'plasma' | 'sepolia';
+export type NetworkType = 'ethereum' | 'polygon' | 'arbitrum' | 'spark' | 'spark-testnet' | 'plasma' | 'sepolia';
 
 export interface Network {
   id: string;
@@ -47,6 +47,15 @@ export const networkConfigs: Record<NetworkType, Network> = {
   spark: {
     id: 'spark',
     name: 'Spark',
+    gasLevel: 'Low',
+    gasColor: '#34C759',
+    icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),
+    color: '#F7931A',
+    addressValidator: validateBitcoinAddress,
+  },
+  'spark-testnet': {
+    id: 'spark-testnet',
+    name: 'Spark Testnet',
     gasLevel: 'Low',
     gasColor: '#34C759',
     icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),

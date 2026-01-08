@@ -28,7 +28,7 @@ export const assetConfig: Record<string, AssetConfig> = {
     symbol: 'BTC',
     icon: require('../../assets/images/tokens/bitcoin-btc-logo.png'),
     color: '#ffffff',
-    supportedNetworks: ['spark'],
+    supportedNetworks: ['spark', 'spark-testnet'],
   },
   usdt: {
     name: 'USD₮',
