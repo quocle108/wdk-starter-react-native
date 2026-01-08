@@ -51,16 +51,28 @@ export default function WalletScreen() {
   const { mutate: refreshBalance } = useRefreshBalance();
 
   const [networkMode, setNetworkMode] = useState<NetworkMode | null>(null);
+  const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
 
   useEffect(() => {
-    getNetworkMode().then(setNetworkMode);
+    getNetworkMode().then((mode) => {
+      console.log('[wallet] Network mode loaded from storage:', mode);
+      setNetworkMode(mode);
+      setNetworkModeLoaded(true);
+    });
   }, []);
 
-  const tokenConfigs = useMemo(() => getTokenConfigs(networkMode || 'mainnet'), [networkMode]);
+  const tokenConfigs = useMemo(() => {
+    if (!networkModeLoaded) {
+      console.log('[wallet] tokenConfigs: waiting for network mode to load');
+      return {} as ReturnType<typeof getTokenConfigs>;
+    }
+    return getTokenConfigs(networkMode!);
+  }, [networkMode, networkModeLoaded]);
+
   const { data: balanceResults, isLoading: isLoadingBalances, refetch } = useBalancesForWallet(
     0,
     tokenConfigs,
-    { enabled: isInitialized && networkMode !== null }
+    { enabled: isInitialized && networkModeLoaded && Object.keys(tokenConfigs).length > 0 }
   );
 
   const [refreshing, setRefreshing] = useState(false);
