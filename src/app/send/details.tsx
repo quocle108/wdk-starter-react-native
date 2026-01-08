@@ -413,6 +413,14 @@ export default function SendDetailsScreen() {
       // For native tokens (ETH), use zero address
       const tokenContractAddress = tokenAddress || '0x0000000000000000000000000000000000000000';
 
+      console.log('Transfer params:', {
+        network: networkId,
+        token: tokenContractAddress,
+        recipient: recipientAddress,
+        amount: amountInSmallestUnit.toString(),
+        decimals,
+      });
+
       const result = await callAccountMethod<{ fee: string; hash: string }>(
         networkId,
         0,
@@ -420,7 +428,7 @@ export default function SendDetailsScreen() {
         {
           token: tokenContractAddress,
           recipient: recipientAddress,
-          amount: amountInSmallestUnit.toString(),
+          amount: amountInSmallestUnit,
         }
       );
 
