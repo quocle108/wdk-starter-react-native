@@ -20,7 +20,7 @@ export default function AuthorizeScreen() {
   }, []);
 
   const handleAuthorize = async () => {
-    if (!hasWallet) {
+    if (wallets.length === 0) {
       Alert.alert('Error', 'No wallet found');
       router.replace('/onboarding');
       return;
@@ -30,7 +30,8 @@ export default function AuthorizeScreen() {
     setError(null);
 
     try {
-      await initializeWallet();
+      const walletId = wallets[0].identifier;
+      await initializeWallet({ walletId });
       router.replace('/wallet');
     } catch (error) {
       console.error('Failed to unlock wallet:', error);
