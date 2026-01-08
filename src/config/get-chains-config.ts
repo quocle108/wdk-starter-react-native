@@ -63,7 +63,7 @@ const getChainsConfig = (sparkNetwork: SparkNetworkMode = 'MAINNET') => {
     polygon: {
       chainId: 137,
       blockchain: 'polygon',
-      provider: 'https://1rpc.io/matic',
+      provider: 'https://polygon-rpc.com',
       bundlerUrl: 'https://api.candide.dev/public/v3/polygon',
       paymasterUrl: 'https://api.candide.dev/public/v3/polygon',
       paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
