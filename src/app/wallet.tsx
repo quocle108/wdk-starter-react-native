@@ -50,17 +50,17 @@ export default function WalletScreen() {
   const { isInitialized, addresses } = useWallet({ walletId: currentWalletId });
   const { mutate: refreshBalance } = useRefreshBalance();
 
-  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+  const [networkMode, setNetworkMode] = useState<NetworkMode | null>(null);
 
   useEffect(() => {
     getNetworkMode().then(setNetworkMode);
   }, []);
 
-  const tokenConfigs = useMemo(() => getTokenConfigs(networkMode), [networkMode]);
+  const tokenConfigs = useMemo(() => getTokenConfigs(networkMode || 'mainnet'), [networkMode]);
   const { data: balanceResults, isLoading: isLoadingBalances, refetch } = useBalancesForWallet(
     0,
     tokenConfigs,
-    { enabled: isInitialized }
+    { enabled: isInitialized && networkMode !== null }
   );
 
   const [refreshing, setRefreshing] = useState(false);
