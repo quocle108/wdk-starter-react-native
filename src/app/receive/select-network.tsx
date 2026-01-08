@@ -2,7 +2,7 @@ import Header from '@/components/header';
 import { assetConfig } from '@/config/assets';
 import { Network, networkConfigs } from '@/config/networks';
 import { NetworkType } from '@/config/networks';
-import { useWallet } from '@tetherto/wdk-react-native-core';
+import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import React, { useCallback, useMemo } from 'react';
@@ -30,7 +30,9 @@ const NETWORK_DESCRIPTIONS: Record<string, string> = {
 export default function ReceiveSelectNetworkScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { addresses } = useWallet();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { addresses } = useWallet({ walletId: currentWalletId });
   const params = useLocalSearchParams();
 
   const { tokenId, tokenSymbol, tokenName } = params as {

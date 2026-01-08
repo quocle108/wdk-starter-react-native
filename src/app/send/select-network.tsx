@@ -2,7 +2,7 @@ import { Network, NetworkSelector } from '@/components/NetworkSelector';
 import { assetConfig, AssetTicker } from '@/config/assets';
 import { networkConfigs, NetworkType } from '@/config/networks';
 import formatAmount from '@/utils/format-amount';
-import { useWallet, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
+import { useWallet, useWalletManager, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
 import getTokenConfigs from '@/config/get-token-configs';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
@@ -19,7 +19,9 @@ export default function SelectNetworkScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
   const params = useLocalSearchParams();
-  const { isInitialized } = useWallet();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { isInitialized } = useWallet({ walletId: currentWalletId });
   const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, { enabled: isInitialized });
   const { tokenId, tokenSymbol, tokenName, scannedAddress } = params as {

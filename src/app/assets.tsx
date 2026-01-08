@@ -1,5 +1,5 @@
 import { FiatCurrency, pricingService } from '@/services/pricing-service';
-import { useWallet, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
+import { useWallet, useWalletManager, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -15,7 +15,9 @@ import { colors } from '@/constants/colors';
 export default function AssetsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { isInitialized } = useWallet();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { isInitialized } = useWallet({ walletId: currentWalletId });
   const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const { data: balanceResults, isLoading } = useBalancesForWallet(0, tokenConfigs, {
     enabled: isInitialized,

@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
-import { useWallet, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
+import { useWallet, useWalletManager, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
 import getTokenConfigs from '@/config/get-token-configs';
 import { AssetSelector, type Token } from '@tetherto/wdk-uikit-react-native';
 import { FiatCurrency, pricingService } from '@/services/pricing-service';
@@ -19,7 +19,9 @@ export default function SelectTokenScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
   const params = useLocalSearchParams();
-  const { isInitialized } = useWallet();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { isInitialized } = useWallet({ walletId: currentWalletId });
   const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, { enabled: isInitialized });
 

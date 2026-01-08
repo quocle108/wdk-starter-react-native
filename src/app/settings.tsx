@@ -16,8 +16,9 @@ import getChainsConfig from '@/config/get-chains-config';
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { addresses, getAddress } = useWallet();
-  const { deleteWallet } = useWalletManager();
+  const { wallets, activeWalletId, deleteWallet } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
 

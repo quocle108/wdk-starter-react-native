@@ -6,8 +6,10 @@ import { pricingService } from '../services/pricing-service';
 import { colors } from '@/constants/colors';
 
 export default function Index() {
-  const { isInitialized } = useWallet();
-  const { hasWallet } = useWalletManager();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { isInitialized } = useWallet({ walletId: currentWalletId });
+  const walletExists = wallets.length > 0;
   const [isPricingReady, setIsPricingReady] = useState(false);
 
   const initializePricing = async () => {
@@ -39,7 +41,7 @@ export default function Index() {
     );
   }
 
-  if (!hasWallet) {
+  if (!walletExists) {
     return <Redirect href="/onboarding" />;
   }
 
