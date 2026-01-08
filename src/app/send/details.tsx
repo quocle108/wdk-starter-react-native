@@ -21,6 +21,7 @@ import {
   Alert,
   Keyboard,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -523,6 +524,27 @@ export default function SendDetailsScreen() {
     return formatTokenAmount(value, token);
   };
 
+  const getExplorerUrl = (txHash: string, network: string): string | null => {
+    const explorers: Record<string, string> = {
+      sepolia: `https://sepolia.etherscan.io/tx/${txHash}`,
+      ethereum: `https://etherscan.io/tx/${txHash}`,
+      polygon: `https://polygonscan.com/tx/${txHash}`,
+      arbitrum: `https://arbiscan.io/tx/${txHash}`,
+      plasma: `https://plasma.to/tx/${txHash}`,
+    };
+    return explorers[network] || null;
+  };
+
+  const handleOpenExplorer = useCallback(() => {
+    const hash = transactionResult?.txId?.hash;
+    if (!hash) return;
+
+    const url = getExplorerUrl(hash, networkId);
+    if (url) {
+      Linking.openURL(url);
+    }
+  }, [transactionResult, networkId]);
+
   const getTransactionAmout = useCallback(() => {
     const numericAmount = parseFloat(amount.replace(/,/g, ''));
     if (inputMode === 'fiat' && tokenPrice > 0) {
@@ -699,6 +721,16 @@ export default function SendDetailsScreen() {
             <Text style={styles.modalDescription}>
               Your transaction has been submitted and is now processing.
             </Text>
+
+            {transactionResult?.txId?.hash && (
+              <TouchableOpacity onPress={handleOpenExplorer} style={styles.txHashContainer}>
+                <Text style={styles.txHashLabel}>Transaction Hash:</Text>
+                <Text style={styles.txHashValue} numberOfLines={1} ellipsizeMode="middle">
+                  {transactionResult.txId.hash}
+                </Text>
+                <Text style={styles.txHashLink}>View on Explorer</Text>
+              </TouchableOpacity>
+            )}
 
             {transactionResult?.txId && (
               <View style={styles.transactionSummary}>
@@ -941,6 +973,28 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
     marginLeft: 12,
+  },
+  txHashContainer: {
+    backgroundColor: colors.cardDark,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  txHashLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  txHashValue: {
+    fontSize: 13,
+    color: colors.text,
+    fontFamily: 'monospace',
+    marginBottom: 8,
+  },
+  txHashLink: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '500',
   },
   transactionRecap: {
     backgroundColor: colors.card,
