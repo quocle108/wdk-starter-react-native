@@ -5,8 +5,8 @@ import { NetworkType } from '@/config/networks';
 import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
-import React, { useCallback, useMemo } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
 
@@ -32,7 +32,7 @@ export default function ReceiveSelectNetworkScreen() {
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses } = useWallet({ walletId: currentWalletId });
+  const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
   const params = useLocalSearchParams();
 
   const { tokenId, tokenSymbol, tokenName } = params as {
@@ -41,30 +41,56 @@ export default function ReceiveSelectNetworkScreen() {
     tokenName: string;
   };
 
-  const networks: NetworkOption[] = useMemo(() => {
-    const tokenConfig = assetConfig[tokenId as keyof typeof assetConfig];
-    if (!tokenConfig) {
-      return [];
-    }
+  const [networks, setNetworks] = useState<NetworkOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    return tokenConfig.supportedNetworks.map((networkType: NetworkType) => {
-      const network = networkConfigs[networkType];
-      const addressData = addresses?.[networkType];
-      // addresses is Record<string, string[]> - get first address from array
-      const address = Array.isArray(addressData)
-        ? addressData[0]
-        : typeof addressData === 'string'
-          ? addressData
-          : undefined;
+  useEffect(() => {
+    const fetchNetworks = async () => {
+      const tokenConfig = assetConfig[tokenId as keyof typeof assetConfig];
+      if (!tokenConfig) {
+        setNetworks([]);
+        setIsLoading(false);
+        return;
+      }
 
-      return {
-        ...network,
-        address,
-        hasAddress: Boolean(address),
-        description: NETWORK_DESCRIPTIONS[network.id],
-      };
-    });
-  }, [tokenId, addresses]);
+      const networksWithAddresses = await Promise.all(
+        tokenConfig.supportedNetworks.map(async (networkType: NetworkType) => {
+          const network = networkConfigs[networkType];
+          let address: string | undefined;
+
+          // Try to get address from addresses object first
+          const addressData = addresses?.[networkType];
+          if (Array.isArray(addressData) && addressData[0]) {
+            address = addressData[0];
+          } else if (typeof addressData === 'string') {
+            address = addressData;
+          } else {
+            // Fallback: fetch address using getAddress
+            try {
+              const fetchedAddress = await getAddress(networkType, 0);
+              if (fetchedAddress) {
+                address = fetchedAddress;
+              }
+            } catch (err) {
+              console.log(`Failed to get address for ${networkType}:`, err);
+            }
+          }
+
+          return {
+            ...network,
+            address,
+            hasAddress: Boolean(address),
+            description: NETWORK_DESCRIPTIONS[network.id],
+          };
+        })
+      );
+
+      setNetworks(networksWithAddresses);
+      setIsLoading(false);
+    };
+
+    fetchNetworks();
+  }, [tokenId, addresses, getAddress]);
 
   const handleSelectNetwork = useCallback(
     (network: NetworkOption) => {
@@ -134,6 +160,18 @@ export default function ReceiveSelectNetworkScreen() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <Header title="Select network" style={styles.header} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading networks...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Header title="Select network" style={styles.header} />
@@ -163,6 +201,16 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    color: colors.textSecondary,
+    fontSize: 14,
   },
   description: {
     paddingHorizontal: 20,
