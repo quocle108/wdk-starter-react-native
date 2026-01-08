@@ -90,7 +90,7 @@ export default function WalletScreen() {
         if (tokenAddress === null) {
           denomination = networkTokens.native.symbol.toLowerCase();
         } else {
-          const token = networkTokens.tokens.find(t => t.address === tokenAddress);
+          const token = networkTokens.tokens.find(t => t.address?.toLowerCase() === tokenAddress?.toLowerCase());
           if (token) {
             denomination = token.symbol.toLowerCase();
           }
@@ -99,7 +99,7 @@ export default function WalletScreen() {
 
       const balanceNum = parseFloat(result.balance) / Math.pow(10,
         tokenAddress === null ? networkTokens?.native.decimals || 18 :
-        networkTokens?.tokens.find(t => t.address === tokenAddress)?.decimals || 6
+        networkTokens?.tokens.find(t => t.address?.toLowerCase() === tokenAddress?.toLowerCase())?.decimals || 6
       );
 
       const current = map.get(denomination) || { totalBalance: 0 };

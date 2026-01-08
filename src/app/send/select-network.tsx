@@ -66,7 +66,7 @@ export default function SelectNetworkScreen() {
             matchedSymbol = networkTokens.native.symbol.toLowerCase();
             decimals = networkTokens.native.decimals;
           } else {
-            const token = networkTokens.tokens.find((t) => t.address === result.tokenAddress);
+            const token = networkTokens.tokens.find((t) => t.address?.toLowerCase() === result.tokenAddress?.toLowerCase());
             if (token) {
               matchedSymbol = token.symbol.toLowerCase();
               decimals = token.decimals;
