@@ -319,7 +319,11 @@ export default function WalletScreen() {
         )}
 
         <View style={styles.portfolioSection}>
-          {aggregatedBalances.length > 0 ? (
+          {!networkModeLoaded || isLoadingBalances ? (
+            <View style={styles.noAssetsContainer}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : aggregatedBalances.length > 0 ? (
             aggregatedBalances.map((asset) => {
               if (!asset) return null;
 

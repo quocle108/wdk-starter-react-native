@@ -391,16 +391,6 @@ export default function SendDetailsScreen() {
       let tokenAddress: string | null = null;
       let decimals = 18;
 
-      console.log('=== DEBUG: Transfer Setup ===');
-      console.log('walletId:', currentWalletId);
-      console.log('isInitialized:', isInitialized);
-      console.log('addresses:', JSON.stringify(addresses, null, 2));
-      console.log('senderAddress (sepolia):', addresses?.sepolia?.[0]);
-      console.log('networkId:', networkId);
-      console.log('tokenId:', tokenId);
-      console.log('tokenSymbol:', tokenSymbol);
-      console.log('networkTokenConfig:', JSON.stringify(networkTokenConfig, null, 2));
-
       if (!isInitialized) {
         Alert.alert('Error', 'Wallet not ready. Please wait and try again.');
         setSendingTransaction(false);
@@ -416,7 +406,6 @@ export default function SendDetailsScreen() {
       // Check if it's a native token or ERC20 token
       if (networkTokenConfig) {
         const isNativeToken = networkTokenConfig.native.symbol.toLowerCase() === tokenId.toLowerCase();
-        console.log('isNativeToken:', isNativeToken);
         if (isNativeToken) {
           tokenAddress = null;
           decimals = networkTokenConfig.native.decimals;
@@ -424,7 +413,6 @@ export default function SendDetailsScreen() {
           const tokenConfig = networkTokenConfig.tokens.find(
             (t) => t.symbol.toLowerCase() === tokenId.toLowerCase()
           );
-          console.log('tokenConfig found:', JSON.stringify(tokenConfig, null, 2));
           if (tokenConfig) {
             tokenAddress = tokenConfig.address;
             decimals = tokenConfig.decimals;
@@ -439,23 +427,21 @@ export default function SendDetailsScreen() {
       // For native tokens (ETH), use zero address
       const tokenContractAddress = tokenAddress || '0x0000000000000000000000000000000000000000';
 
+      // Adjust transferMaxFee based on network (mainnet needs higher fees)
+      const maxFeeByNetwork: Record<string, number> = {
+        ethereum: 2000000,  // 2 USDT for Ethereum mainnet (higher gas)
+        arbitrum: 500000,   // 0.5 USDT for Arbitrum
+        polygon: 500000,    // 0.5 USDT for Polygon
+        sepolia: 500000,    // 0.5 USDT for Sepolia testnet
+        plasma: 500000,     // 0.5 USDT for Plasma
+      };
+
       const transferParams = {
         token: tokenContractAddress,
         recipient: recipientAddress,
         amount: Number(amountInSmallestUnit),
-        transferMaxFee: 500000, // Max 500,000 paymaster token units (0.5 USDT)
+        transferMaxFee: maxFeeByNetwork[networkId] || 500000,
       };
-
-      console.log('=== DEBUG: Transfer Call ===');
-      console.log('networkId:', networkId);
-      console.log('accountIndex:', 0);
-      console.log('method:', 'transfer');
-      console.log('transferParams:', JSON.stringify(transferParams, null, 2));
-      console.log('tokenAddress (raw):', tokenAddress);
-      console.log('tokenContractAddress:', tokenContractAddress);
-      console.log('recipientAddress:', recipientAddress);
-      console.log('amountInSmallestUnit:', amountInSmallestUnit.toString());
-      console.log('decimals:', decimals);
 
       const result = await callAccountMethod<{ fee: string; hash: string }>(
         networkId,
