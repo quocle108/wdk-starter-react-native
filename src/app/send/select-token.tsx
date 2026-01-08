@@ -20,7 +20,7 @@ export default function SelectTokenScreen() {
   const router = useDebouncedNavigation();
   const params = useLocalSearchParams();
   const { wallets, activeWalletId } = useWalletManager();
-  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { isInitialized } = useWallet({ walletId: currentWalletId });
   const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, { enabled: isInitialized });
