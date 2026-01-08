@@ -58,7 +58,7 @@ export default function RootLayout() {
         }}
       >
         <WdkAppProvider
-          networkConfigs={getChainsConfig(sparkNetwork, networkMode)}
+          networkConfigs={getChainsConfig(sparkNetwork)}
           tokenConfigs={getTokenConfigs(networkMode)}
         >
           <NavigationThemeProvider value={CustomDarkTheme}>
