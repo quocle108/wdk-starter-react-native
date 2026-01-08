@@ -11,11 +11,7 @@ export const getNetworkType = (networkId: string): NetworkType => {
     ethereum: 'ethereum',
     polygon: 'polygon',
     arbitrum: 'arbitrum',
-    bitcoin: 'bitcoin',
-    lightning: 'lightning',
-    ton: 'ton',
-    tron: 'tron',
-    solana: 'solana',
+    spark: 'spark',
   };
   return networkMap[networkId] || 'ethereum';
 };
@@ -31,27 +27,16 @@ export const getAssetTicker = (tokenId: string): AssetTicker => {
 
 export const calculateGasFee = async (
   networkId: string,
-  tokenId: string,
+  _tokenId: string,
   _amount?: number
 ): Promise<GasFeeEstimate> => {
   const networkType = getNetworkType(networkId);
-
-  if (networkType === 'bitcoin' && !_amount) {
-    return {
-      fee: undefined,
-      error: 'Insufficient balance for fee calculation',
-    };
-  }
 
   const defaultFees: Record<NetworkType, number> = {
     ethereum: 0.001,
     polygon: 0.0001,
     arbitrum: 0.0001,
-    bitcoin: 0.00001,
-    lightning: 0.000001,
-    ton: 0.05,
-    tron: 1,
-    solana: 0.00001,
+    spark: 0.00001,
   };
 
   return {

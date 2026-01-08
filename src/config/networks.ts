@@ -1,22 +1,10 @@
 import {
   validateEvmAddress,
   validateBitcoinAddress,
-  validateTonAddress,
-  validateTronAddress,
-  validateSolanaAddress,
   AddressValidator,
 } from '@/utils/address-validators';
 
-export type NetworkType =
-  | 'ethereum'
-  | 'polygon'
-  | 'arbitrum'
-  | 'ton'
-  | 'tron'
-  | 'solana'
-  | 'bitcoin'
-  | 'lightning'
-  | 'spark';
+export type NetworkType = 'ethereum' | 'polygon' | 'arbitrum' | 'spark';
 
 export interface Network {
   id: string;
@@ -55,50 +43,6 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/arbitrum-arb-logo.png'),
     color: '#28A0F0',
     addressValidator: validateEvmAddress,
-  },
-  ton: {
-    id: 'ton',
-    name: 'TON',
-    gasLevel: 'Low',
-    gasColor: '#34C759',
-    icon: require('../../assets/images/chains/ton-logo.png'),
-    color: '#0088CC',
-    addressValidator: validateTonAddress,
-  },
-  tron: {
-    id: 'tron',
-    name: 'Tron',
-    gasLevel: 'Low',
-    gasColor: '#34C759',
-    icon: require('../../assets/images/chains/tron-trx-logo.png'),
-    color: '#FF060A',
-    addressValidator: validateTronAddress,
-  },
-  solana: {
-    id: 'solana',
-    name: 'Solana',
-    gasLevel: 'Low',
-    gasColor: '#34C759',
-    icon: require('../../assets/images/chains/solana-sol-logo.png'),
-    color: '#9945FF',
-    addressValidator: validateSolanaAddress,
-  },
-  bitcoin: {
-    id: 'bitcoin',
-    name: 'Bitcoin',
-    gasLevel: 'Normal',
-    gasColor: '#FF9500',
-    icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),
-    color: '#F7931A',
-    addressValidator: validateBitcoinAddress,
-  },
-  lightning: {
-    id: 'lightning',
-    name: 'Lightning',
-    gasLevel: 'Low',
-    gasColor: '#34C759',
-    icon: require('../../assets/images/chains/lightning-logo.png'),
-    color: '#F7CA3E',
   },
   spark: {
     id: 'spark',

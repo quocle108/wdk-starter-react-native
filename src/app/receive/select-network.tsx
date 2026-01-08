@@ -20,11 +20,7 @@ const NETWORK_DESCRIPTIONS: Record<string, string> = {
   ethereum: 'ERC20',
   polygon: 'Polygon Network',
   arbitrum: 'Arbitrum One',
-  ton: 'TON Network',
-  tron: 'Tron Network',
-  solana: 'Solana Network',
-  bitcoin: 'Native Bitcoin Network',
-  lightning: 'Lightning Network',
+  spark: 'Spark Network',
 };
 
 export default function ReceiveSelectNetworkScreen() {

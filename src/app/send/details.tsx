@@ -434,12 +434,8 @@ export default function SendDetailsScreen() {
 
     const denominationValues: Record<string, number> = {
       btc: 1e8,
-      eth: 1e18,
       usdt: 1e6,
       xaut: 1e6,
-      matic: 1e18,
-      ton: 1e9,
-      trx: 1e6,
     };
     const denomValue = denominationValues[token.toLowerCase()] || 1e18;
     const value = Number(fee) / denomValue;

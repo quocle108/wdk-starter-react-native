@@ -20,7 +20,7 @@ export interface Asset {
   color: string;
 }
 
-export type AssetTicker = 'btc' | 'usdt' | 'xaut' | 'eth' | 'matic' | 'ton' | 'trx';
+export type AssetTicker = 'btc' | 'usdt' | 'xaut';
 
 export const assetConfig: Record<string, AssetConfig> = {
   btc: {
