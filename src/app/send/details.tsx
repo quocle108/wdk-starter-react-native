@@ -426,9 +426,9 @@ export default function SendDetailsScreen() {
         0,
         'transfer',
         {
-          token: { address: tokenContractAddress },
+          token: tokenContractAddress,
           recipient: recipientAddress,
-          amount: amountInSmallestUnit.toString(),
+          amount: Number(amountInSmallestUnit),
         }
       );
 
