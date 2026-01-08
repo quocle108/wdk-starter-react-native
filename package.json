@@ -31,7 +31,7 @@
     "@tanstack/react-query": "^5.0.0",
     "@tetherto/wdk-pricing-bitfinex-http": "^1.0.0-beta.1",
     "@tetherto/wdk-pricing-provider": "^1.0.0-beta.1",
-    "@tetherto/wdk-react-native-core": "github:itsdeka/wdk-react-native-core#d0335f696e047d8b6a24702093a398e0d0e99d7d",
+    "@tetherto/wdk-react-native-core": "github:itsdeka/wdk-react-native-core#fork",
     "@tetherto/wdk-react-native-secure-storage": "github:itsdeka/wdk-react-native-secure-storage",
     "@tetherto/wdk-uikit-react-native": "^1.0.0-beta.2",
     "b4a": "^1.7.2",
