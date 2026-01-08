@@ -7,11 +7,11 @@ import * as Clipboard from 'expo-clipboard';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import { Copy, Info, Shield, Trash2, Wallet, Globe } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
-import getChainsConfig, { SparkNetworkMode } from '@/config/get-chains-config';
+import getChainsConfig from '@/config/get-chains-config';
 import { getNetworkMode, setNetworkMode, NetworkMode, getNetworksForMode } from '@/services/network-mode-service';
 
 export default function SettingsScreen() {
@@ -19,11 +19,10 @@ export default function SettingsScreen() {
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId, deleteWallet } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses, isInitialized, getAddress } = useWallet({ walletId: currentWalletId });
+  const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
 
   useEffect(() => {
     getNetworkMode().then(setNetworkModeState);
@@ -31,55 +30,30 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
-      if (!isInitialized) {
-        return;
-      }
-
       const addressMap: Record<string, string> = {};
+      const networks = Object.keys(getChainsConfig());
 
-      // Get all networks from chain config
-      const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
-      const allNetworks = Object.keys(getChainsConfig(sparkNetwork));
-
-      for (const network of allNetworks) {
-        try {
-          // Check if address exists in hook - can be {0: "0x..."} or ["0x..."] or "0x..."
-          const addressData = addresses?.[network];
-          let address: string | undefined;
-
-          if (addressData) {
-            if (typeof addressData === 'string') {
-              address = addressData;
-            } else if (Array.isArray(addressData) && addressData[0]) {
-              address = addressData[0];
-            } else if (typeof addressData === 'object' && addressData['0']) {
-              // Handle {0: "0x..."} format
-              address = addressData['0'];
+      await Promise.all(
+        networks.map(async (network) => {
+          try {
+            if (addresses?.[network]?.[0]) {
+              addressMap[network] = addresses[network][0];
+            } else {
+              const address = await getAddress(network, 0);
+              if (address) {
+                addressMap[network] = address;
+              }
             }
+          } catch (err) {
+            console.log(`Failed to get address for ${network}:`, err);
           }
-
-          // If no address found, derive it
-          if (!address) {
-            const fetchedAddress = await getAddress(network, 0);
-            if (fetchedAddress) {
-              address = fetchedAddress;
-            }
-          }
-
-          if (address) {
-            addressMap[network] = address;
-          }
-        } catch (err) {
-          console.log(`Failed to get address for ${network}:`, err);
-        }
-      }
+        })
+      );
 
       setWalletAddresses(addressMap);
-      setIsLoadingAddresses(false);
     };
-
     fetchAddresses();
-  }, [addresses, isInitialized, getAddress, networkMode]);
+  }, [addresses, getAddress]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
@@ -205,7 +179,12 @@ export default function SettingsScreen() {
 
           <View style={styles.infoCard}>
             <View style={[styles.infoRow, styles.infoRowLast]}>
-              <Text style={styles.infoLabel}>Testnet Mode</Text>
+              <View>
+                <Text style={styles.infoLabel}>Testnet Mode</Text>
+                <Text style={styles.modeDescription}>
+                  {networkMode === 'testnet' ? 'Using Sepolia testnet' : 'Using mainnet networks'}
+                </Text>
+              </View>
               <Switch
                 value={networkMode === 'testnet'}
                 onValueChange={handleNetworkModeToggle}
@@ -223,12 +202,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.addressCard}>
-            {isLoadingAddresses || !isInitialized ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={styles.loadingText}>Loading addresses...</Text>
-              </View>
-            ) : filteredAddresses.length > 0 ? (
+            {filteredAddresses.length > 0 ? (
               filteredAddresses.map(([network, address], index, array) => (
                 <TouchableOpacity
                   key={network}
@@ -347,6 +321,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '500',
   },
+  modeDescription: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
   addressCard: {
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -396,17 +375,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     paddingVertical: 16,
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginLeft: 8,
   },
   dangerSection: {
     paddingHorizontal: 20,
