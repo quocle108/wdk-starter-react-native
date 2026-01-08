@@ -22,7 +22,6 @@ const NETWORK_DESCRIPTIONS: Record<string, string> = {
   polygon: 'Polygon Network',
   arbitrum: 'Arbitrum One',
   spark: 'Spark Network',
-  'spark-testnet': 'Spark Testnet',
   plasma: 'Plasma Network',
   sepolia: 'Sepolia Testnet',
 };
