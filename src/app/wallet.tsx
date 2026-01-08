@@ -32,6 +32,7 @@ import formatAmount from '@/utils/format-amount';
 import formatTokenAmount from '@/utils/format-token-amount';
 import useWalletAvatar from '@/hooks/use-wallet-avatar';
 import { colors } from '@/constants/colors';
+import { getWalletName } from '@/config/avatar-options';
 
 type AggregatedBalance = ({
   denomination: string;
@@ -58,9 +59,14 @@ export default function WalletScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [aggregatedBalances, setAggregatedBalances] = useState<AggregatedBalance>([]);
   const [mounted, setMounted] = useState(false);
+  const [walletDisplayName, setWalletDisplayName] = useState('My Wallet');
   const walletExists = isInitialized || Object.keys(addresses).length > 0;
   const avatar = useWalletAvatar();
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    getWalletName().then(setWalletDisplayName);
+  }, []);
 
   useEffect(() => {
     if (!isInitialized) {
@@ -227,7 +233,7 @@ export default function WalletScreen() {
           <View style={styles.walletIcon}>
             <Text style={styles.walletIconText}>{avatar}</Text>
           </View>
-          <Text style={styles.walletName}>{walletExists ? 'My Wallet' : 'No Wallet'}</Text>
+          <Text style={styles.walletName}>{walletExists ? walletDisplayName : 'No Wallet'}</Text>
         </View>
 
         <View style={styles.headerActions}>

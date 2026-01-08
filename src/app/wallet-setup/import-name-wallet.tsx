@@ -1,4 +1,4 @@
-import avatarOptions, { setAvatar } from '@/config/avatar-options';
+import avatarOptions, { setAvatar, setWalletName as saveWalletName } from '@/config/avatar-options';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
@@ -44,6 +44,7 @@ export default function ImportNameWalletScreen() {
     try {
       await initializeFromMnemonic(seedPhrase, 'default');
       await setAvatar(selectedAvatar.id);
+      await saveWalletName(walletName || 'My Wallet');
 
       toast.success('Your wallet has been imported successfully.');
 

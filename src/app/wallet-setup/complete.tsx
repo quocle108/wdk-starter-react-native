@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
+import { setWalletName } from '@/config/avatar-options';
 
 export default function CompleteScreen() {
   const navigation = useNavigation();
@@ -24,9 +25,11 @@ export default function CompleteScreen() {
 
     setIsLoading(true);
     try {
+      const walletName = params.walletName || 'My Wallet';
       const mnemonic = params.mnemonic.split(',').join(' ');
 
       await initializeFromMnemonic(mnemonic, 'default');
+      await setWalletName(walletName);
 
       setWalletCreated(true);
     } catch (error) {
