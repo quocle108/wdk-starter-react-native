@@ -1,5 +1,5 @@
 import { AssetTicker } from '@/config/assets';
-import { NetworkType } from '@/config/networks';
+import { NetworkType, networkConfigs } from '@/config/networks';
 import { useRefreshBalance, useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import getTokenConfigs from '@/config/get-token-configs';
 import { CryptoAddressInput } from '@tetherto/wdk-uikit-react-native';
@@ -525,14 +525,9 @@ export default function SendDetailsScreen() {
   };
 
   const getExplorerUrl = (txHash: string, network: string): string | null => {
-    const explorers: Record<string, string> = {
-      sepolia: `https://sepolia.etherscan.io/tx/${txHash}`,
-      ethereum: `https://etherscan.io/tx/${txHash}`,
-      polygon: `https://polygonscan.com/tx/${txHash}`,
-      arbitrum: `https://arbiscan.io/tx/${txHash}`,
-      plasma: `https://plasma.to/tx/${txHash}`,
-    };
-    return explorers[network] || null;
+    const networkConfig = networkConfigs[network as NetworkType];
+    if (!networkConfig?.explorerUrl) return null;
+    return `${networkConfig.explorerUrl}${txHash}`;
   };
 
   const handleOpenExplorer = useCallback(() => {

@@ -14,6 +14,7 @@ export interface Network {
   icon: string | any;
   color: string;
   addressValidator?: AddressValidator;
+  explorerUrl?: string;
 }
 
 export const networkConfigs: Record<NetworkType, Network> = {
@@ -25,6 +26,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
     color: '#627EEA',
     addressValidator: validateEvmAddress,
+    explorerUrl: 'https://etherscan.io/tx/',
   },
   polygon: {
     id: 'polygon',
@@ -34,6 +36,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/polygon-matic-logo.png'),
     color: '#8247E5',
     addressValidator: validateEvmAddress,
+    explorerUrl: 'https://polygonscan.com/tx/',
   },
   arbitrum: {
     id: 'arbitrum',
@@ -43,6 +46,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/arbitrum-arb-logo.png'),
     color: '#28A0F0',
     addressValidator: validateEvmAddress,
+    explorerUrl: 'https://arbiscan.io/tx/',
   },
   spark: {
     id: 'spark',
@@ -61,6 +65,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
     color: '#00D4AA',
     addressValidator: validateEvmAddress,
+    explorerUrl: 'https://plasma.to/tx/',
   },
   sepolia: {
     id: 'sepolia',
@@ -70,5 +75,6 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
     color: '#627EEA',
     addressValidator: validateEvmAddress,
+    explorerUrl: 'https://sepolia.etherscan.io/tx/',
   },
 };
