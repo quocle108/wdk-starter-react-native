@@ -31,7 +31,7 @@ export default function ReceiveSelectNetworkScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId } = useWalletManager();
-  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { addresses } = useWallet({ walletId: currentWalletId });
   const params = useLocalSearchParams();
 
@@ -50,12 +50,12 @@ export default function ReceiveSelectNetworkScreen() {
     return tokenConfig.supportedNetworks.map((networkType: NetworkType) => {
       const network = networkConfigs[networkType];
       const addressData = addresses?.[networkType];
-      const address =
-        addressData && typeof addressData === 'object' && 'address' in addressData
-          ? (addressData as { address: string }).address
-          : typeof addressData === 'string'
-            ? addressData
-            : undefined;
+      // addresses is Record<string, string[]> - get first address from array
+      const address = Array.isArray(addressData)
+        ? addressData[0]
+        : typeof addressData === 'string'
+          ? addressData
+          : undefined;
 
       return {
         ...network,
