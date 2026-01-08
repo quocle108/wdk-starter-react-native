@@ -36,13 +36,27 @@ export default function SettingsScreen() {
       await Promise.all(
         networks.map(async (network) => {
           try {
-            if (addresses?.[network]?.[0]) {
-              addressMap[network] = addresses[network][0];
-            } else {
-              const address = await getAddress(network, 0);
-              if (address) {
-                addressMap[network] = address;
+            const addressData = addresses?.[network];
+            let address: string | undefined;
+
+            // Handle different address formats: {0: "0x..."} or ["0x..."] or "0x..."
+            if (addressData) {
+              if (typeof addressData === 'string') {
+                address = addressData;
+              } else if (Array.isArray(addressData) && addressData[0]) {
+                address = addressData[0];
+              } else if (typeof addressData === 'object' && addressData['0']) {
+                address = addressData['0'];
               }
+            }
+
+            // If no address found, derive it
+            if (!address) {
+              address = await getAddress(network, 0);
+            }
+
+            if (address) {
+              addressMap[network] = address;
             }
           } catch (err) {
             console.log(`Failed to get address for ${network}:`, err);
@@ -179,12 +193,7 @@ export default function SettingsScreen() {
 
           <View style={styles.infoCard}>
             <View style={[styles.infoRow, styles.infoRowLast]}>
-              <View>
-                <Text style={styles.infoLabel}>Testnet Mode</Text>
-                <Text style={styles.modeDescription}>
-                  {networkMode === 'testnet' ? 'Using Sepolia testnet' : 'Using mainnet networks'}
-                </Text>
-              </View>
+              <Text style={styles.infoLabel}>Testnet Mode</Text>
               <Switch
                 value={networkMode === 'testnet'}
                 onValueChange={handleNetworkModeToggle}
@@ -320,11 +329,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     fontWeight: '500',
-  },
-  modeDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 4,
   },
   addressCard: {
     backgroundColor: colors.card,
