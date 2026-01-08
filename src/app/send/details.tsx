@@ -17,6 +17,7 @@ import {
   type GasFeeEstimate,
 } from '@/utils/gas-fee-calculator';
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -670,11 +671,15 @@ export default function SendDetailsScreen() {
                 onPress={handleSend}
                 disabled={isSendDisabled}
               >
-                <Text
-                  style={[styles.sendButtonText, isSendDisabled && styles.sendButtonTextDisabled]}
-                >
-                  {sendingTransaction ? 'Sending...' : 'Send'}
-                </Text>
+                {sendingTransaction ? (
+                  <ActivityIndicator size="small" color={colors.text} />
+                ) : (
+                  <Text
+                    style={[styles.sendButtonText, isSendDisabled && styles.sendButtonTextDisabled]}
+                  >
+                    Send
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
