@@ -441,7 +441,7 @@ export default function SendDetailsScreen() {
         token: tokenContractAddress,
         recipient: recipientAddress,
         amount: Number(amountInSmallestUnit),
-        transferMaxFee: 50000, // Max 50,000 paymaster token units
+        transferMaxFee: 500000, // Max 500,000 paymaster token units (0.5 USDT)
       };
 
       console.log('=== DEBUG: Transfer Call ===');
