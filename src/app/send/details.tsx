@@ -421,10 +421,6 @@ export default function SendDetailsScreen() {
         decimals,
       });
 
-      // Convert BigInt to Number for RN bridge serialization
-      // Safe for amounts up to ~9 quadrillion (JavaScript max safe integer)
-      const amountAsNumber = Number(amountInSmallestUnit);
-
       const result = await callAccountMethod<{ fee: string; hash: string }>(
         networkId,
         0,
@@ -432,7 +428,7 @@ export default function SendDetailsScreen() {
         {
           token: tokenContractAddress,
           recipient: recipientAddress,
-          amount: amountAsNumber,
+          amount: amountInSmallestUnit.toString(),
         }
       );
 
