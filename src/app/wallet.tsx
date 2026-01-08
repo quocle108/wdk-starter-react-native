@@ -43,8 +43,9 @@ type AggregatedBalance = ({
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
-  const { isInitialized, addresses } = useWallet();
-  const { hasWallet } = useWalletManager();
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const { isInitialized, addresses } = useWallet({ walletId: currentWalletId });
   const { mutate: refreshBalance } = useRefreshBalance();
 
   const tokenConfigs = useMemo(() => getTokenConfigs(), []);
@@ -57,13 +58,9 @@ export default function WalletScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [aggregatedBalances, setAggregatedBalances] = useState<AggregatedBalance>([]);
   const [mounted, setMounted] = useState(false);
-  const [walletExists, setWalletExists] = useState<boolean | null>(null);
+  const walletExists = wallets.length > 0;
   const avatar = useWalletAvatar();
   const scrollY = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    hasWallet().then(setWalletExists);
-  }, [hasWallet]);
 
   useEffect(() => {
     if (walletExists && !isInitialized) {
@@ -230,7 +227,7 @@ export default function WalletScreen() {
           <View style={styles.walletIcon}>
             <Text style={styles.walletIconText}>{avatar}</Text>
           </View>
-          <Text style={styles.walletName}>{walletExists ? 'My Wallet' : 'No Wallet'}</Text>
+          <Text style={styles.walletName}>{currentWalletId || 'No Wallet'}</Text>
         </View>
 
         <View style={styles.headerActions}>
