@@ -63,9 +63,21 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteWallet(currentWalletId);
+              // Clear local storage first
               await clearAvatar();
               await clearWalletName();
+
+              // Delete wallet - ignore "does not exist" errors as they're harmless
+              try {
+                await deleteWallet(currentWalletId);
+              } catch (deleteError) {
+                const errorMessage = String(deleteError);
+                // Ignore "does not exist" errors - wallet is already gone
+                if (!errorMessage.includes('does not exist')) {
+                  throw deleteError;
+                }
+              }
+
               toast.success('Wallet deleted successfully');
               router.dismissAll('/');
             } catch (error) {
