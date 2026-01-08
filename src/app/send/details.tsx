@@ -415,7 +415,7 @@ export default function SendDetailsScreen() {
         0,
         'transfer',
         {
-          to: recipientAddress,
+          target: recipientAddress,
           amount: amountInSmallestUnit.toString(),
           tokenAddress,
         }
