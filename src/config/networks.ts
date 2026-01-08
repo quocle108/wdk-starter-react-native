@@ -4,7 +4,7 @@ import {
   AddressValidator,
 } from '@/utils/address-validators';
 
-export type NetworkType = 'ethereum' | 'polygon' | 'arbitrum' | 'spark';
+export type NetworkType = 'ethereum' | 'polygon' | 'arbitrum' | 'spark' | 'plasma' | 'sepolia';
 
 export interface Network {
   id: string;
@@ -52,5 +52,23 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),
     color: '#F7931A',
     addressValidator: validateBitcoinAddress,
+  },
+  plasma: {
+    id: 'plasma',
+    name: 'Plasma',
+    gasLevel: 'Low',
+    gasColor: '#34C759',
+    icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
+    color: '#00D4AA',
+    addressValidator: validateEvmAddress,
+  },
+  sepolia: {
+    id: 'sepolia',
+    name: 'Sepolia',
+    gasLevel: 'Low',
+    gasColor: '#34C759',
+    icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
+    color: '#627EEA',
+    addressValidator: validateEvmAddress,
   },
 };

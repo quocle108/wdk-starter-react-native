@@ -5,13 +5,14 @@ import useWalletAvatar from '@/hooks/use-wallet-avatar';
 import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import * as Clipboard from 'expo-clipboard';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
-import { Copy, Info, Shield, Trash2, Wallet } from 'lucide-react-native';
+import { Copy, Info, Shield, Trash2, Wallet, Globe } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
 import getChainsConfig from '@/config/get-chains-config';
+import { getNetworkMode, setNetworkMode, NetworkMode } from '@/services/network-mode-service';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -21,6 +22,11 @@ export default function SettingsScreen() {
   const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
+  const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
+
+  useEffect(() => {
+    getNetworkMode().then(setNetworkModeState);
+  }, []);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -102,6 +108,13 @@ export default function SettingsScreen() {
     return networkConfigs[network as NetworkType]?.name || network;
   };
 
+  const handleNetworkModeToggle = async (value: boolean) => {
+    const newMode: NetworkMode = value ? 'testnet' : 'mainnet';
+    setNetworkModeState(newMode);
+    await setNetworkMode(newMode);
+    toast.success(`Switched to ${newMode === 'testnet' ? 'Testnet' : 'Mainnet'}`);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Header title="Settings" />
@@ -126,6 +139,30 @@ export default function SettingsScreen() {
             <View style={[styles.infoRow, styles.infoRowLast]}>
               <Text style={styles.infoLabel}>Icon</Text>
               <Text style={styles.infoValue}>{avatar}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Globe size={20} color={colors.primary} />
+            <Text style={styles.sectionTitle}>Network Mode</Text>
+          </View>
+
+          <View style={styles.infoCard}>
+            <View style={[styles.infoRow, styles.infoRowLast]}>
+              <View>
+                <Text style={styles.infoLabel}>Testnet Mode</Text>
+                <Text style={styles.modeDescription}>
+                  {networkMode === 'testnet' ? 'Using Sepolia testnet' : 'Using mainnet networks'}
+                </Text>
+              </View>
+              <Switch
+                value={networkMode === 'testnet'}
+                onValueChange={handleNetworkModeToggle}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={colors.white}
+              />
             </View>
           </View>
         </View>
@@ -252,6 +289,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     fontWeight: '500',
+  },
+  modeDescription: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
   addressCard: {
     backgroundColor: colors.card,

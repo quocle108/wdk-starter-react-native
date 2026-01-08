@@ -12,6 +12,8 @@ export const getNetworkType = (networkId: string): NetworkType => {
     polygon: 'polygon',
     arbitrum: 'arbitrum',
     spark: 'spark',
+    plasma: 'plasma',
+    sepolia: 'sepolia',
   };
   return networkMap[networkId] || 'ethereum';
 };
@@ -37,6 +39,8 @@ export const calculateGasFee = async (
     polygon: 0.0001,
     arbitrum: 0.0001,
     spark: 0.00001,
+    plasma: 0.0001,
+    sepolia: 0.001,
   };
 
   return {

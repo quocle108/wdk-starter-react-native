@@ -35,7 +35,7 @@ export const assetConfig: Record<string, AssetConfig> = {
     symbol: 'USD₮',
     icon: require('../../assets/images/tokens/tether-usdt-logo.png'),
     color: '#ffffff',
-    supportedNetworks: ['ethereum', 'polygon', 'arbitrum'],
+    supportedNetworks: ['ethereum', 'polygon', 'arbitrum', 'plasma', 'sepolia'],
   },
   xaut: {
     name: 'XAU₮',
