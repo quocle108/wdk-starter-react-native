@@ -23,14 +23,13 @@ export interface Asset {
 export type AssetTicker = 'btc' | 'usdt' | 'xaut' | 'eth' | 'matic' | 'ton' | 'trx';
 
 export const assetConfig: Record<string, AssetConfig> = {
-  // Bitcoin not supported by SDK yet (getChainsConfig only has EVM chains)
-  // btc: {
-  //   name: 'Bitcoin',
-  //   symbol: 'BTC',
-  //   icon: require('../../assets/images/tokens/bitcoin-btc-logo.png'),
-  //   color: '#ffffff',
-  //   supportedNetworks: ['bitcoin'],
-  // },
+  btc: {
+    name: 'Bitcoin',
+    symbol: 'BTC',
+    icon: require('../../assets/images/tokens/bitcoin-btc-logo.png'),
+    color: '#ffffff',
+    supportedNetworks: ['bitcoin'],
+  },
   usdt: {
     name: 'USD₮',
     symbol: 'USD₮',
