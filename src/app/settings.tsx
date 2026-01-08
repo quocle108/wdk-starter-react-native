@@ -32,32 +32,34 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchAddresses = async () => {
       if (!isInitialized) {
-        console.log('[Settings] Wallet not initialized yet');
         return;
       }
 
-      console.log('[Settings] Fetching addresses...');
       const addressMap: Record<string, string> = {};
 
       // Get all networks from chain config
       const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
       const allNetworks = Object.keys(getChainsConfig(sparkNetwork));
 
-      console.log('[Settings] Networks to fetch:', allNetworks);
-
       for (const network of allNetworks) {
         try {
-          // First check if address exists in hook
+          // Check if address exists in hook - can be {0: "0x..."} or ["0x..."] or "0x..."
           const addressData = addresses?.[network];
           let address: string | undefined;
 
-          if (Array.isArray(addressData) && addressData[0]) {
-            address = addressData[0];
-          } else if (typeof addressData === 'string') {
-            address = addressData;
-          } else {
-            // Derive address using getAddress
-            console.log(`[Settings] Deriving address for ${network}...`);
+          if (addressData) {
+            if (typeof addressData === 'string') {
+              address = addressData;
+            } else if (Array.isArray(addressData) && addressData[0]) {
+              address = addressData[0];
+            } else if (typeof addressData === 'object' && addressData['0']) {
+              // Handle {0: "0x..."} format
+              address = addressData['0'];
+            }
+          }
+
+          // If no address found, derive it
+          if (!address) {
             const fetchedAddress = await getAddress(network, 0);
             if (fetchedAddress) {
               address = fetchedAddress;
@@ -65,15 +67,13 @@ export default function SettingsScreen() {
           }
 
           if (address) {
-            console.log(`[Settings] Got address for ${network}: ${address.slice(0, 10)}...`);
             addressMap[network] = address;
           }
         } catch (err) {
-          console.log(`[Settings] Failed to get address for ${network}:`, err);
+          console.log(`Failed to get address for ${network}:`, err);
         }
       }
 
-      console.log('[Settings] Final addressMap keys:', Object.keys(addressMap));
       setWalletAddresses(addressMap);
       setIsLoadingAddresses(false);
     };
@@ -205,12 +205,7 @@ export default function SettingsScreen() {
 
           <View style={styles.infoCard}>
             <View style={[styles.infoRow, styles.infoRowLast]}>
-              <View>
-                <Text style={styles.infoLabel}>Testnet Mode</Text>
-                <Text style={styles.modeDescription}>
-                  {networkMode === 'testnet' ? 'Using Sepolia & Spark testnet' : 'Using mainnet networks'}
-                </Text>
-              </View>
+              <Text style={styles.infoLabel}>Testnet Mode</Text>
               <Switch
                 value={networkMode === 'testnet'}
                 onValueChange={handleNetworkModeToggle}
@@ -351,11 +346,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     fontWeight: '500',
-  },
-  modeDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 4,
   },
   addressCard: {
     backgroundColor: colors.card,
