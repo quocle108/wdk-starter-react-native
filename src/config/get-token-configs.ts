@@ -4,7 +4,9 @@ const getTokenConfigs = (): TokenConfigs => {
   return {
     sepolia: {
       native: { address: null, symbol: 'ETH', name: 'Sepolia ETH', decimals: 18 },
-      tokens: [],
+      tokens: [
+        { address: '0xd077A400968890Eacc75cdc901F0356c943e4fDb', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
+      ],
     },
     plasma: {
       native: { address: null, symbol: 'ETH', name: 'Plasma ETH', decimals: 18 },

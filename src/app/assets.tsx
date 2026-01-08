@@ -11,6 +11,7 @@ import getDisplaySymbol from '@/utils/get-display-symbol';
 import formatTokenAmount from '@/utils/format-token-amount';
 import Header from '@/components/header';
 import { colors } from '@/constants/colors';
+import { getNetworkMode, filterNetworksByMode, NetworkMode } from '@/services/network-mode-service';
 
 export default function AssetsScreen() {
   const insets = useSafeAreaInsets();
@@ -23,6 +24,11 @@ export default function AssetsScreen() {
     enabled: isInitialized,
   });
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+
+  useEffect(() => {
+    getNetworkMode().then(setNetworkMode);
+  }, []);
 
   const getAssetsWithFiatValue = async () => {
     if (!balanceResults) return [];
@@ -67,6 +73,9 @@ export default function AssetsScreen() {
         const config = assetConfig[denomination];
         if (!config) return null;
 
+        const availableNetworks = filterNetworksByMode(config.supportedNetworks, networkMode);
+        if (availableNetworks.length === 0) return null;
+
         const symbol = getDisplaySymbol(denomination);
 
         const fiatValue = await pricingService.getFiatValue(
@@ -108,7 +117,7 @@ export default function AssetsScreen() {
   useEffect(() => {
     getAssetsWithFiatValue().then(setAssets);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balanceResults]);
+  }, [balanceResults, networkMode]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
