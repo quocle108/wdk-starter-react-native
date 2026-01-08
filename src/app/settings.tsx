@@ -191,8 +191,11 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Shield size={20} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Network Addresses</Text>
+            <Text style={styles.sectionTitle}>Smart Wallet Addresses</Text>
           </View>
+          <Text style={styles.addressTypeNote}>
+            These are Safe smart contract wallet addresses (ERC-4337)
+          </Text>
 
           <View style={styles.addressCard}>
             {filteredAddresses.length > 0 ? (
@@ -315,6 +318,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     marginTop: 4,
+  },
+  addressTypeNote: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
   addressCard: {
     backgroundColor: colors.card,

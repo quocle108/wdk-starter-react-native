@@ -79,6 +79,7 @@ export default function ReceiveQRCodeScreen() {
         />
 
         <View style={styles.addressSection}>
+          <Text style={styles.smartWalletNote}>Smart Wallet Address (ERC-4337)</Text>
           <View style={styles.addressContainer}>
             <Text style={styles.addressText} numberOfLines={1} ellipsizeMode="middle">
               {address}
@@ -158,6 +159,11 @@ const styles = StyleSheet.create({
   },
   addressSection: {
     alignItems: 'center',
+  },
+  smartWalletNote: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 12,
   },
   addressLabel: {
     fontSize: 16,
