@@ -14,10 +14,18 @@ export default function ReceiveQRCodeScreen() {
   const router = useDebouncedNavigation();
   const params = useLocalSearchParams();
 
-  const { tokenName, networkName, address } = params as {
+  const { tokenName, networkName, networkId, address } = params as {
     tokenName: string;
     networkName: string;
+    networkId: string;
     address: string;
+  };
+
+  const getAddressTypeLabel = () => {
+    if (networkId === 'spark') {
+      return 'Spark Address';
+    }
+    return 'Smart Wallet Address (ERC-4337)';
   };
 
   const handleBack = useCallback(() => {
@@ -79,7 +87,7 @@ export default function ReceiveQRCodeScreen() {
         />
 
         <View style={styles.addressSection}>
-          <Text style={styles.smartWalletNote}>Smart Wallet Address (ERC-4337)</Text>
+          <Text style={styles.smartWalletNote}>{getAddressTypeLabel()}</Text>
           <View style={styles.addressContainer}>
             <Text style={styles.addressText} numberOfLines={1} ellipsizeMode="middle">
               {address}

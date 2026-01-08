@@ -111,6 +111,13 @@ export default function SettingsScreen() {
     return networkConfigs[network as NetworkType]?.name || network;
   };
 
+  const getAddressType = (network: string) => {
+    if (network === 'spark') {
+      return 'Spark';
+    }
+    return 'ERC-4337';
+  };
+
   const filteredAddresses = Object.entries(walletAddresses).filter(([network]) => {
     const allowedNetworks = getNetworksForMode(networkMode);
     return allowedNetworks.includes(network as NetworkType);
@@ -191,11 +198,8 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Shield size={20} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Smart Wallet Addresses</Text>
+            <Text style={styles.sectionTitle}>Wallet Addresses</Text>
           </View>
-          <Text style={styles.addressTypeNote}>
-            These are Safe smart contract wallet addresses (ERC-4337)
-          </Text>
 
           <View style={styles.addressCard}>
             {filteredAddresses.length > 0 ? (
@@ -210,7 +214,10 @@ export default function SettingsScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.addressContent}>
-                    <Text style={styles.networkLabel}>{getNetworkName(network)}</Text>
+                    <View style={styles.networkLabelRow}>
+                      <Text style={styles.networkLabel}>{getNetworkName(network)}</Text>
+                      <Text style={styles.addressTypeTag}>{getAddressType(network)}</Text>
+                    </View>
                     <Text style={styles.addressValue}>{formatAddress(address)}</Text>
                   </View>
                   <Copy size={18} color={colors.primary} />
@@ -319,12 +326,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 4,
   },
-  addressTypeNote: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 12,
-    paddingHorizontal: 4,
-  },
   addressCard: {
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -345,10 +346,24 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 12,
   },
+  networkLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   networkLabel: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 4,
+  },
+  addressTypeTag: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    marginLeft: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   addressValue: {
     fontSize: 13,
