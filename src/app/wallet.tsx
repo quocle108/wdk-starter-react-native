@@ -55,7 +55,6 @@ export default function WalletScreen() {
 
   useEffect(() => {
     getNetworkMode().then((mode) => {
-      console.log('[wallet] Network mode loaded from storage:', mode);
       setNetworkMode(mode);
       setNetworkModeLoaded(true);
     });
@@ -63,7 +62,6 @@ export default function WalletScreen() {
 
   const tokenConfigs = useMemo(() => {
     if (!networkModeLoaded) {
-      console.log('[wallet] tokenConfigs: waiting for network mode to load');
       return {} as ReturnType<typeof getTokenConfigs>;
     }
     return getTokenConfigs(networkMode!);
@@ -94,10 +92,6 @@ export default function WalletScreen() {
   }, [isInitialized, router]);
 
   const getAggregatedBalances = async () => {
-    console.log('[wallet] getAggregatedBalances - networkMode:', networkMode);
-    console.log('[wallet] getAggregatedBalances - tokenConfigs keys:', Object.keys(tokenConfigs));
-    console.log('[wallet] getAggregatedBalances - balanceResults:', JSON.stringify(balanceResults, null, 2));
-
     if (!balanceResults) return [];
 
     const map = new Map<string, { totalBalance: number }>();

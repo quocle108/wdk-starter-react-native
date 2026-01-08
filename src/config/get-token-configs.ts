@@ -47,13 +47,9 @@ const getTokenConfigs = (networkMode?: NetworkMode): TokenConfigs => {
 
   const allowedNetworks = networkMode === 'testnet' ? TESTNET_NETWORKS : MAINNET_NETWORKS;
 
-  const filtered = Object.fromEntries(
+  return Object.fromEntries(
     Object.entries(ALL_TOKEN_CONFIGS).filter(([key]) => allowedNetworks.includes(key))
   ) as TokenConfigs;
-
-  console.log('[getTokenConfigs] networkMode:', networkMode, 'networks:', Object.keys(filtered));
-
-  return filtered;
 };
 
 export default getTokenConfigs;
