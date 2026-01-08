@@ -30,50 +30,59 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
+      console.log('[Settings] === Starting fetchAddresses ===');
+      console.log('[Settings] addresses from hook:', JSON.stringify(addresses, null, 2));
+
       const addressMap: Record<string, string> = {};
       const networks = Object.keys(getChainsConfig());
+      console.log('[Settings] Networks to process:', networks);
 
-      await Promise.all(
-        networks.map(async (network) => {
-          try {
-            const addressData = addresses?.[network];
-            let address: string | undefined;
+      // Process networks sequentially to see where it hangs
+      for (const network of networks) {
+        console.log(`[Settings] Processing network: ${network}`);
+        try {
+          const addressData = addresses?.[network];
+          console.log(`[Settings] ${network} - addressData from hook:`, JSON.stringify(addressData));
+          let address: string | undefined;
 
-            // Handle different address formats: {0: "0x..."} or ["0x..."] or "0x..."
-            if (addressData) {
-              if (typeof addressData === 'string') {
-                address = addressData;
-              } else if (Array.isArray(addressData) && addressData[0]) {
-                address = addressData[0];
-              } else if (typeof addressData === 'object' && addressData['0']) {
-                address = addressData['0'];
-              }
+          // Handle different address formats: {0: "0x..."} or ["0x..."] or "0x..."
+          if (addressData) {
+            if (typeof addressData === 'string') {
+              address = addressData;
+              console.log(`[Settings] ${network} - found string address`);
+            } else if (Array.isArray(addressData) && addressData[0]) {
+              address = addressData[0];
+              console.log(`[Settings] ${network} - found array address`);
+            } else if (typeof addressData === 'object' && addressData['0']) {
+              address = addressData['0'];
+              console.log(`[Settings] ${network} - found object address`);
             }
-
-            // If no address found, try to derive it with timeout
-            if (!address) {
-              try {
-                const timeoutPromise = new Promise<undefined>((_, reject) =>
-                  setTimeout(() => reject(new Error('Timeout')), 5000)
-                );
-                address = await Promise.race([
-                  getAddress(network, 0),
-                  timeoutPromise
-                ]);
-              } catch {
-                // Derivation failed or timed out, skip this network
-              }
-            }
-
-            if (address) {
-              addressMap[network] = address;
-            }
-          } catch (err) {
-            // Skip failed networks
           }
-        })
-      );
 
+          // If no address found, try to derive it
+          if (!address) {
+            console.log(`[Settings] ${network} - No cached address, calling getAddress...`);
+            const startTime = Date.now();
+            try {
+              address = await getAddress(network, 0);
+              console.log(`[Settings] ${network} - getAddress returned in ${Date.now() - startTime}ms:`, address);
+            } catch (deriveError) {
+              console.error(`[Settings] ${network} - getAddress ERROR after ${Date.now() - startTime}ms:`, deriveError);
+            }
+          }
+
+          if (address) {
+            addressMap[network] = address;
+            console.log(`[Settings] ${network} - Added to addressMap`);
+          } else {
+            console.log(`[Settings] ${network} - No address available`);
+          }
+        } catch (err) {
+          console.error(`[Settings] ${network} - Outer catch error:`, err);
+        }
+      }
+
+      console.log('[Settings] === Final addressMap ===', JSON.stringify(addressMap, null, 2));
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
