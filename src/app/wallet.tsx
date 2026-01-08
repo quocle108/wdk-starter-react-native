@@ -44,7 +44,7 @@ export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId } = useWalletManager();
-  const currentWalletId = activeWalletId || wallets[0]?.identifier;
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { isInitialized, addresses } = useWallet({ walletId: currentWalletId });
   const { mutate: refreshBalance } = useRefreshBalance();
 
@@ -58,15 +58,15 @@ export default function WalletScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [aggregatedBalances, setAggregatedBalances] = useState<AggregatedBalance>([]);
   const [mounted, setMounted] = useState(false);
-  const walletExists = wallets.length > 0;
+  const walletExists = isInitialized || Object.keys(addresses).length > 0;
   const avatar = useWalletAvatar();
   const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (walletExists && !isInitialized) {
+    if (!isInitialized) {
       router.replace('/authorize');
     }
-  }, [walletExists, isInitialized, router]);
+  }, [isInitialized, router]);
 
   const getAggregatedBalances = async () => {
     if (!balanceResults) return [];
@@ -227,7 +227,7 @@ export default function WalletScreen() {
           <View style={styles.walletIcon}>
             <Text style={styles.walletIconText}>{avatar}</Text>
           </View>
-          <Text style={styles.walletName}>{currentWalletId || 'No Wallet'}</Text>
+          <Text style={styles.walletName}>{walletExists ? 'My Wallet' : 'No Wallet'}</Text>
         </View>
 
         <View style={styles.headerActions}>
