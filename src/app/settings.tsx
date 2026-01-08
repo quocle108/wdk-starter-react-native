@@ -19,7 +19,7 @@ export default function SettingsScreen() {
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId, deleteWallet } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses, isInitialized } = useWallet({ walletId: currentWalletId });
+  const { addresses, isInitialized, getAddress } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
@@ -30,29 +30,56 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    console.log('[Settings] useEffect triggered');
-    console.log('[Settings] isInitialized:', isInitialized);
-    console.log('[Settings] addresses from hook:', JSON.stringify(addresses));
+    const fetchAddresses = async () => {
+      if (!isInitialized) {
+        console.log('[Settings] Wallet not initialized yet');
+        return;
+      }
 
-    // Build address map from hook's addresses object
-    const addressMap: Record<string, string> = {};
+      console.log('[Settings] Fetching addresses...');
+      const addressMap: Record<string, string> = {};
 
-    if (addresses && typeof addresses === 'object') {
-      Object.entries(addresses).forEach(([network, networkAddresses]) => {
-        if (Array.isArray(networkAddresses) && networkAddresses[0]) {
-          addressMap[network] = networkAddresses[0];
+      // Get all networks from chain config
+      const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
+      const allNetworks = Object.keys(getChainsConfig(sparkNetwork));
+
+      console.log('[Settings] Networks to fetch:', allNetworks);
+
+      for (const network of allNetworks) {
+        try {
+          // First check if address exists in hook
+          const addressData = addresses?.[network];
+          let address: string | undefined;
+
+          if (Array.isArray(addressData) && addressData[0]) {
+            address = addressData[0];
+          } else if (typeof addressData === 'string') {
+            address = addressData;
+          } else {
+            // Derive address using getAddress
+            console.log(`[Settings] Deriving address for ${network}...`);
+            const fetchedAddress = await getAddress(network, 0);
+            if (fetchedAddress) {
+              address = fetchedAddress;
+            }
+          }
+
+          if (address) {
+            console.log(`[Settings] Got address for ${network}: ${address.slice(0, 10)}...`);
+            addressMap[network] = address;
+          }
+        } catch (err) {
+          console.log(`[Settings] Failed to get address for ${network}:`, err);
         }
-      });
-    }
+      }
 
-    console.log('[Settings] Built addressMap:', JSON.stringify(addressMap));
-    setWalletAddresses(addressMap);
-
-    // Only stop loading if wallet is initialized or we have addresses
-    if (isInitialized || Object.keys(addressMap).length > 0) {
+      console.log('[Settings] Final addressMap keys:', Object.keys(addressMap));
+      setWalletAddresses(addressMap);
       setIsLoadingAddresses(false);
-    }
-  }, [addresses, isInitialized]);
+    };
+
+    fetchAddresses();
+  }, [addresses, isInitialized, getAddress, networkMode]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
@@ -181,7 +208,7 @@ export default function SettingsScreen() {
               <View>
                 <Text style={styles.infoLabel}>Testnet Mode</Text>
                 <Text style={styles.modeDescription}>
-                  {networkMode === 'testnet' ? 'Using Sepolia testnet' : 'Using mainnet networks'}
+                  {networkMode === 'testnet' ? 'Using Sepolia & Spark testnet' : 'Using mainnet networks'}
                 </Text>
               </View>
               <Switch
