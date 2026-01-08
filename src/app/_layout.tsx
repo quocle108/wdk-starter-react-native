@@ -1,3 +1,6 @@
+// Crypto polyfill - MUST be first import before anything else
+import 'react-native-get-random-values';
+
 import { Buffer } from '@craftzdog/react-native-buffer';
 // @ts-ignore
 global.Buffer = Buffer as unknown as BufferConstructor;
