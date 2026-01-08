@@ -410,14 +410,17 @@ export default function SendDetailsScreen() {
       const amountInSmallestUnit = BigInt(Math.floor(numericAmount * Math.pow(10, decimals)));
 
       // Call the transfer method on the account
+      // For native tokens (ETH), use zero address
+      const tokenContractAddress = tokenAddress || '0x0000000000000000000000000000000000000000';
+
       const result = await callAccountMethod<{ fee: string; hash: string }>(
         networkId,
         0,
         'transfer',
         {
-          target: recipientAddress,
+          token: tokenContractAddress,
+          recipient: recipientAddress,
           amount: amountInSmallestUnit.toString(),
-          tokenAddress,
         }
       );
 
