@@ -19,7 +19,7 @@ export default function SettingsScreen() {
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId, deleteWallet } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses, getAddress, isInitialized } = useWallet({ walletId: currentWalletId });
+  const { addresses, isInitialized } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
@@ -30,50 +30,29 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    const fetchAddresses = async () => {
-      // Wait for wallet to be initialized
-      if (!isInitialized) {
-        console.log('[Settings] Wallet not initialized yet');
-        return;
-      }
+    console.log('[Settings] useEffect triggered');
+    console.log('[Settings] isInitialized:', isInitialized);
+    console.log('[Settings] addresses from hook:', JSON.stringify(addresses));
 
-      console.log('[Settings] Fetching addresses, isInitialized:', isInitialized);
-      console.log('[Settings] addresses from hook:', addresses);
+    // Build address map from hook's addresses object
+    const addressMap: Record<string, string> = {};
 
-      setIsLoadingAddresses(true);
-      const addressMap: Record<string, string> = {};
-      // Get all networks (SDK needs all chains configured)
-      const sparkNetwork = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
-      const allNetworks = Object.keys(getChainsConfig(sparkNetwork));
-
-      console.log('[Settings] Networks to fetch:', allNetworks);
-
-      for (const network of allNetworks) {
-        try {
-          // First check if address is already in the hook
-          if (addresses?.[network]?.[0]) {
-            console.log(`[Settings] Found address in hook for ${network}:`, addresses[network][0]);
-            addressMap[network] = addresses[network][0];
-          } else {
-            // Try to get address from SDK
-            console.log(`[Settings] Calling getAddress for ${network}...`);
-            const address = await getAddress(network, 0);
-            console.log(`[Settings] getAddress result for ${network}:`, address);
-            if (address) {
-              addressMap[network] = address;
-            }
-          }
-        } catch (err) {
-          console.log(`[Settings] Failed to get address for ${network}:`, err);
+    if (addresses && typeof addresses === 'object') {
+      Object.entries(addresses).forEach(([network, networkAddresses]) => {
+        if (Array.isArray(networkAddresses) && networkAddresses[0]) {
+          addressMap[network] = networkAddresses[0];
         }
-      }
+      });
+    }
 
-      console.log('[Settings] Final addressMap:', addressMap);
-      setWalletAddresses(addressMap);
+    console.log('[Settings] Built addressMap:', JSON.stringify(addressMap));
+    setWalletAddresses(addressMap);
+
+    // Only stop loading if wallet is initialized or we have addresses
+    if (isInitialized || Object.keys(addressMap).length > 0) {
       setIsLoadingAddresses(false);
-    };
-    fetchAddresses();
-  }, [addresses, getAddress, networkMode, isInitialized]);
+    }
+  }, [addresses, isInitialized]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
