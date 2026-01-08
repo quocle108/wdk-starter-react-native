@@ -8,14 +8,15 @@ import { ThemeProvider } from '@tetherto/wdk-uikit-react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import getChainsConfig from '@/config/get-chains-config';
+import getChainsConfig, { SparkNetworkMode } from '@/config/get-chains-config';
 import getTokenConfigs from '@/config/get-token-configs';
 import { Toaster } from 'sonner-native';
 import { colors } from '@/constants/colors';
+import { getNetworkMode } from '@/services/network-mode-service';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,9 +30,22 @@ const CustomDarkTheme = {
 };
 
 export default function RootLayout() {
+  const [sparkNetwork, setSparkNetwork] = useState<SparkNetworkMode>('MAINNET');
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    SplashScreen.hideAsync();
+    const init = async () => {
+      const mode = await getNetworkMode();
+      setSparkNetwork(mode === 'testnet' ? 'TESTNET' : 'MAINNET');
+      setIsReady(true);
+      SplashScreen.hideAsync();
+    };
+    init();
   }, []);
+
+  if (!isReady) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -42,7 +56,7 @@ export default function RootLayout() {
         }}
       >
         <WdkAppProvider
-          networkConfigs={getChainsConfig()}
+          networkConfigs={getChainsConfig(sparkNetwork)}
           tokenConfigs={getTokenConfigs()}
         >
           <NavigationThemeProvider value={CustomDarkTheme}>

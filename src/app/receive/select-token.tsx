@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getNetworkMode, filterNetworksByMode, NetworkMode } from '@/services/network-mode-service';
 
 interface Token {
   id: string;
@@ -31,17 +32,26 @@ export default function ReceiveSelectTokenScreen() {
   const router = useDebouncedNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [recentTokens, setRecentTokens] = useState<string[]>([]);
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
 
   useEffect(() => {
-    const loadRecentTokens = async () => {
-      const recent = await getRecentTokens('receive');
+    const loadData = async () => {
+      const [recent, mode] = await Promise.all([
+        getRecentTokens('receive'),
+        getNetworkMode(),
+      ]);
       setRecentTokens(recent);
+      setNetworkMode(mode);
     };
-    loadRecentTokens();
+    loadData();
   }, []);
 
   const tokens: Token[] = useMemo(() => {
     return Object.entries(assetConfig)
+      .filter(([_, config]) => {
+        const availableNetworks = filterNetworksByMode(config.supportedNetworks, networkMode);
+        return availableNetworks.length > 0;
+      })
       .map(([assetSymbol, config]) => {
         return {
           id: assetSymbol,
@@ -51,7 +61,7 @@ export default function ReceiveSelectTokenScreen() {
           color: config.color,
         };
       });
-  }, []);
+  }, [networkMode]);
 
   const filteredTokens = useMemo(() => {
     if (!searchQuery) return tokens;

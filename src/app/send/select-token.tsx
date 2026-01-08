@@ -14,6 +14,7 @@ import getDisplaySymbol from '@/utils/get-display-symbol';
 import { getRecentTokens, addToRecentTokens } from '@/utils/recent-tokens';
 import formatTokenAmount from '@/utils/format-token-amount';
 import Header from '@/components/header';
+import { getNetworkMode, filterNetworksByMode, NetworkMode } from '@/services/network-mode-service';
 
 export default function SelectTokenScreen() {
   const insets = useSafeAreaInsets();
@@ -28,13 +29,18 @@ export default function SelectTokenScreen() {
   const { scannedAddress } = params as { scannedAddress?: string };
   const [recentTokens, setRecentTokens] = useState<string[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
 
   useEffect(() => {
-    const loadRecentTokens = async () => {
-      const recent = await getRecentTokens('send');
+    const loadData = async () => {
+      const [recent, mode] = await Promise.all([
+        getRecentTokens('send'),
+        getNetworkMode(),
+      ]);
       setRecentTokens(recent);
+      setNetworkMode(mode);
     };
-    loadRecentTokens();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -79,6 +85,9 @@ export default function SelectTokenScreen() {
         const config = assetConfig[assetSymbol as keyof typeof assetConfig];
         if (!config) continue;
 
+        const availableNetworks = filterNetworksByMode(config.supportedNetworks, networkMode);
+        if (availableNetworks.length === 0) continue;
+
         let usdValue = 0;
         try {
           usdValue = await pricingService.getFiatValue(totalBalance, assetSymbol as AssetTicker, FiatCurrency.USD);
@@ -111,7 +120,7 @@ export default function SelectTokenScreen() {
     };
 
     calculateTokensWithFiatValues();
-  }, [balanceResults, tokenConfigs]);
+  }, [balanceResults, tokenConfigs, networkMode]);
 
   const handleSelectToken = useCallback(
     async (token: Token) => {

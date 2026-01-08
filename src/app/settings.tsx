@@ -4,6 +4,7 @@ import { networkConfigs, NetworkType } from '@/config/networks';
 import useWalletAvatar from '@/hooks/use-wallet-avatar';
 import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import * as Clipboard from 'expo-clipboard';
+import * as Updates from 'expo-updates';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import { Copy, Info, Shield, Trash2, Wallet, Globe } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -110,9 +111,25 @@ export default function SettingsScreen() {
 
   const handleNetworkModeToggle = async (value: boolean) => {
     const newMode: NetworkMode = value ? 'testnet' : 'mainnet';
-    setNetworkModeState(newMode);
-    await setNetworkMode(newMode);
-    toast.success(`Switched to ${newMode === 'testnet' ? 'Testnet' : 'Mainnet'}`);
+
+    Alert.alert(
+      'Switch Network Mode',
+      `Switch to ${newMode === 'testnet' ? 'Testnet' : 'Mainnet'}? The app will restart to apply changes.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Switch',
+          onPress: async () => {
+            await setNetworkMode(newMode);
+            setNetworkModeState(newMode);
+            toast.success(`Switched to ${newMode === 'testnet' ? 'Testnet' : 'Mainnet'}`);
+            setTimeout(() => {
+              Updates.reloadAsync();
+            }, 500);
+          },
+        },
+      ]
+    );
   };
 
   return (

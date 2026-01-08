@@ -1,4 +1,6 @@
-const getChainsConfig = () => {
+export type SparkNetworkMode = 'MAINNET' | 'TESTNET';
+
+const getChainsConfig = (sparkNetwork: SparkNetworkMode = 'MAINNET') => {
   return {
     sepolia: {
       chainId: 11155111,
@@ -25,7 +27,7 @@ const getChainsConfig = () => {
     spark: {
       chainId: 99999,
       blockchain: 'spark',
-      network: 'MAINNET',
+      network: sparkNetwork,
     },
     ethereum: {
       chainId: 1,
