@@ -389,9 +389,17 @@ export default function SendDetailsScreen() {
       let tokenAddress: string | null = null;
       let decimals = 18;
 
+      console.log('=== DEBUG: Transfer Setup ===');
+      console.log('walletId:', currentWalletId);
+      console.log('networkId:', networkId);
+      console.log('tokenId:', tokenId);
+      console.log('tokenSymbol:', tokenSymbol);
+      console.log('networkTokenConfig:', JSON.stringify(networkTokenConfig, null, 2));
+
       // Check if it's a native token or ERC20 token
       if (networkTokenConfig) {
         const isNativeToken = networkTokenConfig.native.symbol.toLowerCase() === tokenId.toLowerCase();
+        console.log('isNativeToken:', isNativeToken);
         if (isNativeToken) {
           tokenAddress = null;
           decimals = networkTokenConfig.native.decimals;
@@ -399,6 +407,7 @@ export default function SendDetailsScreen() {
           const tokenConfig = networkTokenConfig.tokens.find(
             (t) => t.symbol.toLowerCase() === tokenId.toLowerCase()
           );
+          console.log('tokenConfig found:', JSON.stringify(tokenConfig, null, 2));
           if (tokenConfig) {
             tokenAddress = tokenConfig.address;
             decimals = tokenConfig.decimals;
@@ -413,23 +422,28 @@ export default function SendDetailsScreen() {
       // For native tokens (ETH), use zero address
       const tokenContractAddress = tokenAddress || '0x0000000000000000000000000000000000000000';
 
-      console.log('Transfer params:', {
-        network: networkId,
+      const transferParams = {
         token: tokenContractAddress,
         recipient: recipientAddress,
-        amount: amountInSmallestUnit.toString(),
-        decimals,
-      });
+        amount: Number(amountInSmallestUnit),
+      };
+
+      console.log('=== DEBUG: Transfer Call ===');
+      console.log('networkId:', networkId);
+      console.log('accountIndex:', 0);
+      console.log('method:', 'transfer');
+      console.log('transferParams:', JSON.stringify(transferParams, null, 2));
+      console.log('tokenAddress (raw):', tokenAddress);
+      console.log('tokenContractAddress:', tokenContractAddress);
+      console.log('recipientAddress:', recipientAddress);
+      console.log('amountInSmallestUnit:', amountInSmallestUnit.toString());
+      console.log('decimals:', decimals);
 
       const result = await callAccountMethod<{ fee: string; hash: string }>(
         networkId,
         0,
         'transfer',
-        {
-          token: tokenContractAddress,
-          recipient: recipientAddress,
-          amount: Number(amountInSmallestUnit),
-        }
+        transferParams
       );
 
       setTransactionResult({ txId: result });
