@@ -33,8 +33,12 @@ export default function SettingsScreen() {
     const fetchAddresses = async () => {
       // Wait for wallet to be initialized
       if (!isInitialized) {
+        console.log('[Settings] Wallet not initialized yet');
         return;
       }
+
+      console.log('[Settings] Fetching addresses, isInitialized:', isInitialized);
+      console.log('[Settings] addresses from hook:', addresses);
 
       setIsLoadingAddresses(true);
       const addressMap: Record<string, string> = {};
@@ -42,23 +46,29 @@ export default function SettingsScreen() {
       const sparkNetwork = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
       const allNetworks = Object.keys(getChainsConfig(sparkNetwork));
 
-      await Promise.all(
-        allNetworks.map(async (network) => {
-          try {
-            if (addresses?.[network]?.[0]) {
-              addressMap[network] = addresses[network][0];
-            } else {
-              const address = await getAddress(network, 0);
-              if (address) {
-                addressMap[network] = address;
-              }
-            }
-          } catch (err) {
-            console.log(`Failed to get address for ${network}:`, err);
-          }
-        })
-      );
+      console.log('[Settings] Networks to fetch:', allNetworks);
 
+      for (const network of allNetworks) {
+        try {
+          // First check if address is already in the hook
+          if (addresses?.[network]?.[0]) {
+            console.log(`[Settings] Found address in hook for ${network}:`, addresses[network][0]);
+            addressMap[network] = addresses[network][0];
+          } else {
+            // Try to get address from SDK
+            console.log(`[Settings] Calling getAddress for ${network}...`);
+            const address = await getAddress(network, 0);
+            console.log(`[Settings] getAddress result for ${network}:`, address);
+            if (address) {
+              addressMap[network] = address;
+            }
+          }
+        } catch (err) {
+          console.log(`[Settings] Failed to get address for ${network}:`, err);
+        }
+      }
+
+      console.log('[Settings] Final addressMap:', addressMap);
       setWalletAddresses(addressMap);
       setIsLoadingAddresses(false);
     };
