@@ -7,7 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import { Copy, Info, Shield, Trash2, Wallet, Globe } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { colors } from '@/constants/colors';
@@ -19,10 +19,11 @@ export default function SettingsScreen() {
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId, deleteWallet } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
+  const { addresses, getAddress, isInitialized } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
 
   useEffect(() => {
     getNetworkMode().then(setNetworkModeState);
@@ -30,13 +31,19 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
+      // Wait for wallet to be initialized
+      if (!isInitialized) {
+        return;
+      }
+
+      setIsLoadingAddresses(true);
       const addressMap: Record<string, string> = {};
-      // Get networks filtered by current network mode
+      // Get all networks (SDK needs all chains configured)
       const sparkNetwork = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
-      const networks = Object.keys(getChainsConfig(sparkNetwork, networkMode));
+      const allNetworks = Object.keys(getChainsConfig(sparkNetwork));
 
       await Promise.all(
-        networks.map(async (network) => {
+        allNetworks.map(async (network) => {
           try {
             if (addresses?.[network]?.[0]) {
               addressMap[network] = addresses[network][0];
@@ -53,9 +60,10 @@ export default function SettingsScreen() {
       );
 
       setWalletAddresses(addressMap);
+      setIsLoadingAddresses(false);
     };
     fetchAddresses();
-  }, [addresses, getAddress, networkMode]);
+  }, [addresses, getAddress, networkMode, isInitialized]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
@@ -204,7 +212,12 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.addressCard}>
-            {filteredAddresses.length > 0 ? (
+            {isLoadingAddresses || !isInitialized ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.loadingText}>Loading addresses...</Text>
+              </View>
+            ) : filteredAddresses.length > 0 ? (
               filteredAddresses.map(([network, address], index, array) => (
                 <TouchableOpacity
                   key={network}
@@ -377,6 +390,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     paddingVertical: 16,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginLeft: 8,
   },
   dangerSection: {
     paddingHorizontal: 20,
