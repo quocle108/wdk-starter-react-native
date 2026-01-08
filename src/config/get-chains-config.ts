@@ -1,9 +1,5 @@
 const getChainsConfig = () => {
   return {
-    bitcoin: {
-      blockchain: 'bitcoin',
-      network: 'MAINNET',
-    },
     sepolia: {
       chainId: 11155111,
       blockchain: 'sepolia',
