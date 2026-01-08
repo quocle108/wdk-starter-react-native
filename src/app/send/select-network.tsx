@@ -91,8 +91,13 @@ export default function SelectNetworkScreen() {
             FiatCurrency.USD
           );
 
+          const displayName = network.id === 'spark' && networkMode === 'testnet'
+            ? 'Spark Testnet'
+            : network.name;
+
           return {
             ...network,
+            name: displayName,
             balance: formatTokenAmount(balanceValue, tokenId as AssetTicker, false),
             balanceFiat: formatAmount(balanceUSD),
             fiatCurrency: FiatCurrency.USD,

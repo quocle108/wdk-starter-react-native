@@ -80,8 +80,13 @@ export default function ReceiveSelectNetworkScreen() {
             }
           }
 
+          const displayName = network.id === 'spark' && networkMode === 'testnet'
+            ? 'Spark Testnet'
+            : network.name;
+
           return {
             ...network,
+            name: displayName,
             address,
             hasAddress: Boolean(address),
             description: NETWORK_DESCRIPTIONS[network.id],
