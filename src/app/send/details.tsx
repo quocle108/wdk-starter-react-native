@@ -440,7 +440,18 @@ export default function SendDetailsScreen() {
       }
 
       // Convert amount to smallest unit (wei/satoshi/etc)
-      const amountInSmallestUnit = BigInt(Math.floor(numericAmount * Math.pow(10, decimals)));
+      // Use string-based conversion to avoid floating point precision issues
+      const amountStr = numericAmount.toFixed(decimals);
+      const [intPart, decPart = ''] = amountStr.split('.');
+      const paddedDecimal = decPart.padEnd(decimals, '0').slice(0, decimals);
+      const amountInSmallestUnit = BigInt(intPart + paddedDecimal);
+
+      // Validate amount is positive
+      if (amountInSmallestUnit <= 0n) {
+        Alert.alert('Error', 'Amount must be greater than 0');
+        setSendingTransaction(false);
+        return;
+      }
 
       // Call the transfer method on the account
       // For native tokens (ETH), use zero address
@@ -450,9 +461,9 @@ export default function SendDetailsScreen() {
       let transferParams: Record<string, unknown>;
 
       if (networkId === 'spark') {
-        // Spark uses different parameter format: tokenAmount in satoshis
+        // Spark uses different parameter format: tokenAmount in satoshis as string
         transferParams = {
-          tokenAmount: Number(amountInSmallestUnit),
+          tokenAmount: amountInSmallestUnit.toString(),
           receiverSparkAddress: recipientAddress,
         };
       } else {
