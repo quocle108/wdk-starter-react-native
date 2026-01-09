@@ -3,8 +3,9 @@ import { NetworkType, networkConfigs } from '@/config/networks';
 import formatAmount from '@/utils/format-amount';
 import { useWallet, useWalletManager, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenDetails } from '../components/TokenDetails';
@@ -13,6 +14,7 @@ import getTokenConfigs from '../config/get-token-configs';
 import getDisplaySymbol from '@/utils/get-display-symbol';
 import Header from '@/components/header';
 import { colors } from '@/constants/colors';
+import { getNetworkMode, NetworkMode } from '@/services/network-mode-service';
 
 export default function TokenDetailsScreen() {
   const router = useDebouncedNavigation();
@@ -22,9 +24,26 @@ export default function TokenDetailsScreen() {
   const { isInitialized, addresses } = useWallet({ walletId: currentWalletId });
   const params = useLocalSearchParams<{ walletId?: string; token?: string }>();
 
-  const tokenConfigs = useMemo(() => getTokenConfigs(), []);
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+  const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
+
+  // Load network mode on focus to pick up changes from settings
+  useFocusEffect(
+    useCallback(() => {
+      getNetworkMode().then((mode) => {
+        setNetworkMode(mode);
+        setNetworkModeLoaded(true);
+      });
+    }, [])
+  );
+
+  const tokenConfigs = useMemo(() => {
+    if (!networkModeLoaded) return {};
+    return getTokenConfigs(networkMode);
+  }, [networkMode, networkModeLoaded]);
+
   const { data: balanceResults, isLoading } = useBalancesForWallet(0, tokenConfigs, {
-    enabled: isInitialized,
+    enabled: isInitialized && networkModeLoaded && Object.keys(tokenConfigs).length > 0,
   });
 
   const tokenSymbol = params.token?.toLowerCase() as keyof typeof assetConfig;

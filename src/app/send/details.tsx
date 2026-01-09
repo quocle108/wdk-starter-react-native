@@ -4,9 +4,11 @@ import { useRefreshBalance, useWallet, useWalletManager } from '@tetherto/wdk-re
 import getTokenConfigs from '@/config/get-token-configs';
 import { CryptoAddressInput } from '@tetherto/wdk-uikit-react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import { RefreshCw } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getNetworkMode, NetworkMode } from '@/services/network-mode-service';
 import { FiatCurrency, pricingService } from '@/services/pricing-service';
 import { useKeyboard } from '@/hooks/use-keyboard';
 import { colors } from '@/constants/colors';
@@ -49,8 +51,25 @@ export default function SendDetailsScreen() {
   const { wallets, activeWalletId } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { callAccountMethod, isInitialized, addresses } = useWallet({ walletId: currentWalletId });
-  const tokenConfigs = useMemo(() => getTokenConfigs(), []);
   const params = useLocalSearchParams();
+
+  const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+  const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
+
+  // Load network mode on focus to pick up changes from settings
+  useFocusEffect(
+    useCallback(() => {
+      getNetworkMode().then((mode) => {
+        setNetworkMode(mode);
+        setNetworkModeLoaded(true);
+      });
+    }, [])
+  );
+
+  const tokenConfigs = useMemo(() => {
+    if (!networkModeLoaded) return {};
+    return getTokenConfigs(networkMode);
+  }, [networkMode, networkModeLoaded]);
   const scrollViewRef = useRef<ScrollView>(null);
   const amountSectionYPosition = useRef<number>(0);
   const {

@@ -4,6 +4,7 @@ import { Network, networkConfigs } from '@/config/networks';
 import { NetworkType } from '@/config/networks';
 import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -44,9 +45,12 @@ export default function ReceiveSelectNetworkScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
 
-  useEffect(() => {
-    getNetworkMode().then(setNetworkMode);
-  }, []);
+  // Load network mode on focus to pick up changes from settings
+  useFocusEffect(
+    useCallback(() => {
+      getNetworkMode().then(setNetworkMode);
+    }, [])
+  );
 
   useEffect(() => {
     const fetchNetworks = async () => {

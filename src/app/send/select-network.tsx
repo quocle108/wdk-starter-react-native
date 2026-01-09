@@ -5,6 +5,7 @@ import formatAmount from '@/utils/format-amount';
 import { useWallet, useWalletManager, useBalancesForWallet } from '@tetherto/wdk-react-native-core';
 import getTokenConfigs from '@/config/get-token-configs';
 import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -23,8 +24,6 @@ export default function SelectNetworkScreen() {
   const { wallets, activeWalletId } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { isInitialized } = useWallet({ walletId: currentWalletId });
-  const tokenConfigs = useMemo(() => getTokenConfigs(), []);
-  const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, { enabled: isInitialized });
   const { tokenId, tokenSymbol, tokenName, scannedAddress } = params as {
     tokenId: string;
     tokenSymbol: string;
@@ -34,10 +33,26 @@ export default function SelectNetworkScreen() {
 
   const [networks, setNetworks] = useState<Network[]>([]);
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
+  const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
 
-  useEffect(() => {
-    getNetworkMode().then(setNetworkModeState);
-  }, []);
+  // Load network mode on focus to pick up changes from settings
+  useFocusEffect(
+    useCallback(() => {
+      getNetworkMode().then((mode) => {
+        setNetworkModeState(mode);
+        setNetworkModeLoaded(true);
+      });
+    }, [])
+  );
+
+  const tokenConfigs = useMemo(() => {
+    if (!networkModeLoaded) return {};
+    return getTokenConfigs(networkMode);
+  }, [networkMode, networkModeLoaded]);
+
+  const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, {
+    enabled: isInitialized && networkModeLoaded && Object.keys(tokenConfigs).length > 0
+  });
 
   useEffect(() => {
     const calculateNetworks = async () => {
