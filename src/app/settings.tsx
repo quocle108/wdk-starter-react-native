@@ -19,7 +19,7 @@ export default function SettingsScreen() {
   const router = useDebouncedNavigation();
   const { wallets, activeWalletId, deleteWallet } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses, getAddress } = useWallet({ walletId: currentWalletId });
+  const { addresses, getAddress, isInitialized } = useWallet({ walletId: currentWalletId });
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
@@ -34,7 +34,7 @@ export default function SettingsScreen() {
       const allowedNetworks = getNetworksForMode(networkMode);
 
       console.log('[Settings] === Starting fetchAddresses ===');
-      console.log('[Settings] networkMode:', networkMode, 'sparkNetwork:', sparkNetwork);
+      console.log('[Settings] isInitialized:', isInitialized, 'networkMode:', networkMode);
       console.log('[Settings] allowedNetworks:', allowedNetworks);
       console.log('[Settings] addresses from hook:', JSON.stringify(addresses, null, 2));
 
@@ -59,8 +59,8 @@ export default function SettingsScreen() {
             }
           }
 
-          // If no address found, try to derive it with timeout (spark can hang)
-          if (!address) {
+          // If no address found and WDK is initialized, try to derive it with timeout
+          if (!address && isInitialized) {
             console.log(`[Settings] ${network} - No cached address, calling getAddress with 10s timeout...`);
             const startTime = Date.now();
             try {
@@ -75,6 +75,8 @@ export default function SettingsScreen() {
             } catch (deriveError) {
               console.error(`[Settings] ${network} - getAddress ERROR after ${Date.now() - startTime}ms:`, deriveError);
             }
+          } else if (!address && !isInitialized) {
+            console.log(`[Settings] ${network} - Skipping derivation, WDK not initialized yet`);
           }
 
           if (address) {
@@ -92,7 +94,7 @@ export default function SettingsScreen() {
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
-  }, [addresses, getAddress, networkMode]);
+  }, [addresses, getAddress, networkMode, isInitialized]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
