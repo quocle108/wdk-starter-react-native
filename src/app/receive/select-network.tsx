@@ -85,7 +85,7 @@ export default function ReceiveSelectNetworkScreen() {
           }
 
           const displayName = network.id === 'spark' && networkMode === 'testnet'
-            ? 'Spark Testnet'
+            ? 'Spark Regtest'
             : network.name;
 
           return {
