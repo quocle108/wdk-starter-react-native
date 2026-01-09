@@ -461,12 +461,25 @@ export default function SendDetailsScreen() {
       let transferParams: Record<string, unknown>;
 
       if (networkId === 'spark') {
-        // Spark SDK: transfer({ amountSats, receiverSparkAddress })
+        // Spark WDK: sendTransaction({ to, value }) for native BTC
+        // This calls wallet.transfer({ receiverSparkAddress: to, amountSats: value })
         transferParams = {
-          amountSats: Number(amountInSmallestUnit),
-          receiverSparkAddress: recipientAddress,
+          to: recipientAddress,
+          value: Number(amountInSmallestUnit),
         };
         console.log('[Spark Transfer] params:', JSON.stringify(transferParams));
+
+        // Use sendTransaction method for Spark native BTC
+        const result = await callAccountMethod<{ fee: string; hash: string }>(
+          networkId,
+          0,
+          'sendTransaction',
+          transferParams
+        );
+        setTransactionResult({ txId: result });
+        setShowConfirmation(true);
+        toast.success('Transaction sent successfully!');
+        return;
       } else {
         // EVM networks (Safe accounts) use standard transfer params
         // Adjust transferMaxFee based on network (mainnet needs higher fees)
