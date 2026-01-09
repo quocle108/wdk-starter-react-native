@@ -273,6 +273,18 @@ This starter supports the following blockchain networks and operations:
 - **Real-Time Data**: Live balance and transaction updates via WDK Indexer
 - **QR Code Support**: Generate and scan QR codes for easy address sharing
 
+### Block Explorers
+| Network | Explorer | URL |
+|---------|----------|-----|
+| Ethereum | Etherscan | https://etherscan.io |
+| Polygon | Polygonscan | https://polygonscan.com |
+| Arbitrum | Arbiscan | https://arbiscan.io |
+| Plasma | Plasma Explorer | https://plasma.to |
+| Spark | Sparkscan | https://sparkscan.io |
+| Sepolia | Sepolia Etherscan | https://sepolia.etherscan.io |
+
+> **Note**: For ERC-4337 Safe accounts, transaction hashes link to [JiffyScan](https://jiffyscan.xyz) UserOperation explorer. Spark explorer requires a `?network=regtest` or `?network=mainnet` parameter.
+
 ## 🔒 Security Features
 
 This starter implements multiple layers of security for protecting user assets:
