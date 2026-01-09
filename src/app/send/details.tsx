@@ -461,10 +461,10 @@ export default function SendDetailsScreen() {
       let transferParams: Record<string, unknown>;
 
       if (networkId === 'spark') {
-        // Spark uses different parameter format: tokenAmount in satoshis as string
+        // Spark SDK: { to: 'spark1...', value: satoshis }
         transferParams = {
-          tokenAmount: amountInSmallestUnit.toString(),
-          receiverSparkAddress: recipientAddress,
+          to: recipientAddress,
+          value: Number(amountInSmallestUnit),
         };
       } else {
         // EVM networks (Safe accounts) use standard transfer params
