@@ -22,17 +22,21 @@ For detailed documentation about the complete WDK ecosystem, visit [docs.wallet.
 ## 🌟 Features
 
 ### Multi-Chain Support
-- **Bitcoin (SegWit)**: Native bitcoin transfers with SegWit addresses
+- **Spark**: Bitcoin Layer 2 with instant transfers
 - **Ethereum**: EVM transactions with gas sponsorship support
 - **Polygon**: Low-cost EVM transactions with gas sponsorship
 - **Arbitrum**: Layer 2 scaling with gas sponsorship support
-- **TON**: Native TON blockchain transfers
-- **Tron**: TRC-20 token support with low fees
-- **Solana**: High-performance blockchain support
+- **Plasma**: Tether's native Layer 2 network
+- **Sepolia**: Ethereum testnet for development
+
+### Network Mode Toggle
+- **Mainnet/Testnet Switch**: Easy toggle between mainnet and testnet in settings
+- **Automatic Refresh**: Balance and token lists update when switching modes
+- **Consistent State**: All screens respect the current network mode
 
 ### Multi-Token Support
-- **BTC**: Native Bitcoin on SegWit and Lightning networks
-- **USD₮ (Tether USD)**: Multi-chain USD₮ support (Ethereum, Polygon, Arbitrum, TON, Tron, Solana)
+- **BTC**: Bitcoin on Spark network
+- **USD₮ (Tether USD)**: Multi-chain USD₮ support (Ethereum, Polygon, Arbitrum, Plasma, Spark)
 - **XAU₮ (Tether Gold)**: Gold-backed stablecoin on Ethereum
 
 ### Wallet Management
@@ -59,7 +63,7 @@ For detailed documentation about the complete WDK ecosystem, visit [docs.wallet.
 
 ## 🧱 Platform Prerequisites
 
-- Node.js 22+
+- Node.js >= 20.19.4
 - iOS: Xcode toolchain
 - Android: SDK (see `app.json` build properties for version requirements)
 
@@ -237,23 +241,27 @@ The app follows a clean architecture pattern with clear separation of concerns:
 
 This starter supports the following blockchain networks and operations:
 
+### Mainnet Networks
 | Network | Balance | History | Send | Receive | Gas Sponsorship |
 |---------|---------|---------|------|---------|-----------------|
-| **Bitcoin (SegWit)** | ✅ | ✅ | ✅ | ✅ | N/A |
-| **Lightning** | ✅ | ✅ | ✅ | ✅ | N/A |
+| **Spark** | ✅ | ✅ | ✅ | ✅ | N/A |
 | **Ethereum** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Polygon** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Arbitrum** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **TON** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Tron** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Solana** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Plasma** | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### Testnet Networks
+| Network | Balance | History | Send | Receive | Gas Sponsorship |
+|---------|---------|---------|------|---------|-----------------|
+| **Spark (Regtest)** | ✅ | ✅ | ✅ | ✅ | N/A |
+| **Sepolia** | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Token Support
 
 | Token | Symbol | Networks |
 |-------|--------|----------|
-| **Bitcoin** | BTC | Bitcoin (SegWit), Lightning |
-| **Tether USD** | USD₮ | Ethereum, Polygon, Arbitrum, TON, Tron, Solana |
+| **Bitcoin** | BTC | Spark |
+| **Tether USD** | USD₮ | Ethereum, Polygon, Arbitrum, Plasma, Spark, Sepolia |
 | **Tether Gold** | XAU₮ | Ethereum |
 
 ### Key Features
@@ -292,7 +300,7 @@ This starter implements multiple layers of security for protecting user assets:
 ## ⚙️ Polyfills & Build Configuration
 
 ### Node.js Polyfills
-The app includes comprehensive Node.js polyfills for React Native compatibility via `@tetherto/wdk-react-native-provider/metro-polyfills`
+The app includes comprehensive Node.js polyfills for React Native compatibility via `@tetherto/wdk-react-native-core/metro-polyfills`
 ### Native Modules
 - **Sodium**: `sodium-javascript` (WebAssembly-based cryptography)
 - **Random**: `react-native-get-random-values` (secure randomness)
@@ -331,14 +339,13 @@ The app includes comprehensive Node.js polyfills for React Native compatibility 
 ### Platform Requirements
 - **Android**: minSdkVersion 29, compileSdkVersion 36
 - **iOS**: Latest Xcode toolchain recommended
-- **Node.js**: 22+ required
+- **Node.js**: >= 20.19.4 required
 
 ### WDK Packages
-- `@tetherto/wdk-react-native-provider`: Main wallet provider
+- `@tetherto/wdk-react-native-core`: Core wallet provider with hooks and state management
 - `@tetherto/wdk-uikit-react-native`: UI components library
 - `@tetherto/wdk-pricing-provider`: Fiat pricing integration
 - `@tetherto/wdk-pricing-bitfinex-http`: Bitfinex price data provider
-- `@tetherto/pear-wrk-wdk`: BareKit worklets runtime
 
 ## 🎨 Customization Guide
 
