@@ -7,7 +7,9 @@
 > 
 > For production use, please wait for the stable release or use at your own risk in development/testing environments only.
 
-An Expo + React Native starter demonstrating how to build a secure, multi-chain, non-custodial wallet using the WDK (Wallet Development Kit). Features BareKit worklets for cryptographic operations, secure secret management, and a complete wallet implementation with onboarding, transactions, and asset management.
+An Expo + React Native starter demonstrating how to build a secure, multi-chain, non-custodial wallet using the WDK (Wallet Development Kit). This wallet uses **ERC-4337 (Account Abstraction)** with **Safe smart contract accounts** on EVM networks, enabling gasless transactions through paymasters. Features BareKit worklets for cryptographic operations, secure secret management, and a complete wallet implementation with onboarding, transactions, and asset management.
+
+> **Note**: This starter currently implements ERC-4337 Safe accounts for EVM networks. Support for regular EOA (Externally Owned Account) wallets on additional networks is planned for future releases.
 
 Click below to see the wallet in action:
 
@@ -21,13 +23,13 @@ For detailed documentation about the complete WDK ecosystem, visit [docs.wallet.
 
 ## 🌟 Features
 
-### Multi-Chain Support
-- **Spark**: Bitcoin Layer 2 with instant transfers
-- **Ethereum**: EVM transactions with gas sponsorship support
-- **Polygon**: Low-cost EVM transactions with gas sponsorship
-- **Arbitrum**: Layer 2 scaling with gas sponsorship support
-- **Plasma**: Tether's native Layer 2 network
-- **Sepolia**: Ethereum testnet for development
+### Multi-Chain Support (ERC-4337 Safe Accounts)
+- **Ethereum**: Safe smart contract account with gas sponsorship via paymaster
+- **Polygon**: Safe account with low-cost transactions and gas sponsorship
+- **Arbitrum**: Safe account on Layer 2 with gas sponsorship support
+- **Plasma**: Safe account on Tether's native Layer 2 network
+- **Sepolia**: Safe account on Ethereum testnet for development
+- **Spark**: Bitcoin Layer 2 with instant transfers (native Bitcoin addresses)
 
 ### Network Mode Toggle
 - **Mainnet/Testnet Switch**: Easy toggle between mainnet and testnet in settings
@@ -183,7 +185,7 @@ src/
 The app follows a clean architecture pattern with clear separation of concerns:
 
 1. **Providers Layer** (`_layout.tsx`)
-   - `WalletProvider`: Manages wallet state, blockchain interactions, and WDK service
+   - `WalletProvider`: Manages wallet state, ERC-4337 Safe accounts, blockchain interactions, and WDK service
    - `ThemeProvider`: Handles dark mode and custom theming
    - `NavigationThemeProvider`: React Navigation theme configuration
 
@@ -241,31 +243,32 @@ The app follows a clean architecture pattern with clear separation of concerns:
 
 This starter supports the following blockchain networks and operations:
 
-### Mainnet Networks
-| Network | Balance | History | Send | Receive | Gas Sponsorship |
-|---------|---------|---------|------|---------|-----------------|
-| **Spark** | ✅ | ✅ | ✅ | ✅ | N/A |
-| **Ethereum** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Polygon** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Arbitrum** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Plasma** | ✅ | ✅ | ✅ | ✅ | ✅ |
+### Mainnet Networks (ERC-4337 Safe Accounts)
+| Network | Account Type | Balance | History | Send | Receive | Gas Sponsorship |
+|---------|--------------|---------|---------|------|---------|-----------------|
+| **Ethereum** | Safe (ERC-4337) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Polygon** | Safe (ERC-4337) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Arbitrum** | Safe (ERC-4337) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Plasma** | Safe (ERC-4337) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Spark** | Native (Bitcoin) | ✅ | ✅ | ✅ | ✅ | N/A |
 
 ### Testnet Networks
-| Network | Balance | History | Send | Receive | Gas Sponsorship |
-|---------|---------|---------|------|---------|-----------------|
-| **Spark (Regtest)** | ✅ | ✅ | ✅ | ✅ | N/A |
-| **Sepolia** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Network | Account Type | Balance | History | Send | Receive | Gas Sponsorship |
+|---------|--------------|---------|---------|------|---------|-----------------|
+| **Sepolia** | Safe (ERC-4337) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Spark (Regtest)** | Native (Bitcoin) | ✅ | ✅ | ✅ | ✅ | N/A |
 
 ### Token Support
 
-| Token | Symbol | Networks |
-|-------|--------|----------|
-| **Bitcoin** | BTC | Spark |
-| **Tether USD** | USD₮ | Ethereum, Polygon, Arbitrum, Plasma, Spark, Sepolia |
-| **Tether Gold** | XAU₮ | Ethereum |
+| Token | Symbol | Networks (Account Type) |
+|-------|--------|-------------------------|
+| **Bitcoin** | BTC | Spark (Native) |
+| **Tether USD** | USD₮ | Ethereum (Safe), Polygon (Safe), Arbitrum (Safe), Plasma (Safe), Spark (Native), Sepolia (Safe) |
+| **Tether Gold** | XAU₮ | Ethereum (Safe) |
 
 ### Key Features
-- **Gas Sponsorship**: EVM networks (Ethereum, Polygon, Arbitrum) and other supported chains offer gasless transactions via paymasters
+- **ERC-4337 Safe Accounts**: All EVM networks use Safe smart contract accounts for enhanced security and flexibility
+- **Gas Sponsorship**: EVM networks (Ethereum, Polygon, Arbitrum, Plasma) offer gasless transactions via paymasters - users don't need native tokens for gas
 - **Multi-Network**: Send the same token across different networks based on preference and fees
 - **Real-Time Data**: Live balance and transaction updates via WDK Indexer
 - **QR Code Support**: Generate and scan QR codes for easy address sharing
@@ -273,6 +276,12 @@ This starter supports the following blockchain networks and operations:
 ## 🔒 Security Features
 
 This starter implements multiple layers of security for protecting user assets:
+
+### Smart Contract Account Security (ERC-4337)
+- **Safe Accounts**: EVM networks use battle-tested Safe smart contract accounts
+- **Account Abstraction**: Enhanced transaction validation and execution logic
+- **Gasless Transactions**: Users don't need native tokens for gas - transactions are sponsored via paymasters
+- **Future Flexibility**: Smart contract accounts enable future features like social recovery, spending limits, and multi-sig
 
 ### Secure Key Management
 - **BareKit Worklets**: Cryptographic operations run in isolated worklet context
