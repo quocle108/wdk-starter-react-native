@@ -23,12 +23,19 @@ export default function SettingsScreen() {
   const avatar = useWalletAvatar();
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [networkMode, setNetworkModeState] = useState<NetworkMode>('mainnet');
+  const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
 
   useEffect(() => {
-    getNetworkMode().then(setNetworkModeState);
+    getNetworkMode().then((mode) => {
+      setNetworkModeState(mode);
+      setNetworkModeLoaded(true);
+    });
   }, []);
 
   useEffect(() => {
+    // Wait for network mode to be loaded from storage before fetching addresses
+    if (!networkModeLoaded) return;
+
     const fetchAddresses = async () => {
       const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
       const allowedNetworks = getNetworksForMode(networkMode);
@@ -94,7 +101,7 @@ export default function SettingsScreen() {
       setWalletAddresses(addressMap);
     };
     fetchAddresses();
-  }, [addresses, getAddress, networkMode, isInitialized]);
+  }, [addresses, getAddress, networkMode, isInitialized, networkModeLoaded]);
 
   const handleDeleteWallet = () => {
     Alert.alert(
