@@ -145,7 +145,7 @@ export default function SettingsScreen() {
 
   const getNetworkName = (network: string) => {
     if (network === 'spark' && networkMode === 'testnet') {
-      return 'Spark Testnet';
+      return 'Spark Regtest';
     }
     return networkConfigs[network as NetworkType]?.name || network;
   };

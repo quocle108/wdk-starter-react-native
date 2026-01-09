@@ -41,8 +41,8 @@ export default function RootLayout() {
     const init = async () => {
       const mode = await getNetworkMode();
       setNetworkMode(mode);
-      // Always use MAINNET for spark since SDK validation only accepts spark1... prefix
-      setSparkNetwork('MAINNET');
+      // Use REGTEST for testnet mode, MAINNET for mainnet
+      setSparkNetwork(mode === 'testnet' ? 'REGTEST' : 'MAINNET');
       setIsReady(true);
       SplashScreen.hideAsync();
     };
