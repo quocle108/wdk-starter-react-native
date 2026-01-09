@@ -464,8 +464,9 @@ export default function SendDetailsScreen() {
         // Spark SDK: { to: 'spark1...', value: satoshis }
         transferParams = {
           to: recipientAddress,
-          value: Number(amountInSmallestUnit),
+          value: amountInSmallestUnit.toString(),
         };
+        console.log('[Spark Transfer] params:', JSON.stringify(transferParams));
       } else {
         // EVM networks (Safe accounts) use standard transfer params
         // Adjust transferMaxFee based on network (mainnet needs higher fees)
