@@ -1,6 +1,6 @@
 import {
   validateEvmAddress,
-  validateBitcoinAddress,
+  validateSparkAddress,
   AddressValidator,
 } from '@/utils/address-validators';
 
@@ -65,7 +65,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),
     color: '#F7931A',
     accountType: 'Native',
-    addressValidator: validateBitcoinAddress,
+    addressValidator: validateSparkAddress,
   },
   plasma: {
     id: 'plasma',
