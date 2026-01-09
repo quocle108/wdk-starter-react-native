@@ -602,7 +602,12 @@ export default function SendDetailsScreen() {
                 <View style={styles.recapDivider} />
                 <View style={styles.recapRow}>
                   <Text style={styles.recapLabel}>Network:</Text>
-                  <Text style={styles.recapValue}>{networkName}</Text>
+                  <Text style={styles.recapValue}>
+                    {networkName}
+                    {networkConfigs[networkId as NetworkType]?.accountType === 'Safe' && (
+                      <Text style={styles.recapValueSecondary}> (Safe)</Text>
+                    )}
+                  </Text>
                 </View>
               </View>
 
@@ -771,7 +776,9 @@ export default function SendDetailsScreen() {
 
             <View style={styles.transactionSummary}>
               <Text style={styles.summaryLabel}>Network:</Text>
-              <Text style={styles.summaryValue}>{networkName}</Text>
+              <Text style={styles.summaryValue}>
+                {networkName}{networkConfigs[networkId as NetworkType]?.accountType === 'Safe' ? ' (Safe)' : ''}
+              </Text>
             </View>
 
             <TouchableOpacity style={styles.modalButton} onPress={handleConfirmSend}>

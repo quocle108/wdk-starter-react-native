@@ -159,11 +159,12 @@ export default function SettingsScreen() {
     return networkConfigs[network as NetworkType]?.name || network;
   };
 
-  const getAddressType = (network: string) => {
-    if (network === 'spark') {
-      return 'Spark';
+  const getAddressType = (network: string): string | null => {
+    const config = networkConfigs[network as NetworkType];
+    if (config?.accountType === 'Safe') {
+      return 'Safe';
     }
-    return 'ERC-4337';
+    return null; // No tag for native addresses
   };
 
   const filteredAddresses = Object.entries(walletAddresses).filter(([network]) => {
@@ -259,7 +260,9 @@ export default function SettingsScreen() {
                   <View style={styles.addressContent}>
                     <View style={styles.networkLabelRow}>
                       <Text style={styles.networkLabel}>{getNetworkName(network)}</Text>
-                      <Text style={styles.addressTypeTag}>{getAddressType(network)}</Text>
+                      {getAddressType(network) && (
+                        <Text style={styles.addressTypeTag}>{getAddressType(network)}</Text>
+                      )}
                     </View>
                     <Text style={styles.addressValue}>{formatAddress(address)}</Text>
                   </View>

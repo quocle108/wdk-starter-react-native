@@ -156,9 +156,14 @@ export default function ReceiveSelectNetworkScreen() {
             )}
           </View>
           <View style={styles.networkDetails}>
-            <Text style={[styles.networkName, isDisabled && styles.networkNameDisabled]}>
-              {item.name}
-            </Text>
+            <View style={styles.networkNameRow}>
+              <Text style={[styles.networkName, isDisabled && styles.networkNameDisabled]}>
+                {item.name}
+              </Text>
+              {item.accountType === 'Safe' && (
+                <Text style={styles.accountTypeTag}>Safe</Text>
+              )}
+            </View>
             {item.description && (
               <Text
                 style={[styles.networkDescription, isDisabled && styles.networkDescriptionDisabled]}
@@ -279,14 +284,28 @@ const styles = StyleSheet.create({
   networkDetails: {
     flex: 1,
   },
+  networkNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   networkName: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 4,
   },
   networkNameDisabled: {
     color: colors.textTertiary,
+  },
+  accountTypeTag: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    marginLeft: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   networkDescription: {
     fontSize: 14,

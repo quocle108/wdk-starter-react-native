@@ -5,6 +5,7 @@ import {
 } from '@/utils/address-validators';
 
 export type NetworkType = 'ethereum' | 'polygon' | 'arbitrum' | 'spark' | 'plasma' | 'sepolia';
+export type AccountType = 'Safe' | 'Native';
 
 export interface Network {
   id: string;
@@ -13,6 +14,7 @@ export interface Network {
   gasColor: string;
   icon: string | any;
   color: string;
+  accountType: AccountType; // 'Safe' for ERC-4337 smart contract accounts, 'Native' for regular addresses
   addressValidator?: AddressValidator;
   explorerUrl?: string;
   userOpExplorerUrl?: string;
@@ -26,6 +28,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#FF3B30',
     icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
     color: '#627EEA',
+    accountType: 'Safe',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://etherscan.io/tx/',
     userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
@@ -37,6 +40,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#34C759',
     icon: require('../../assets/images/chains/polygon-matic-logo.png'),
     color: '#8247E5',
+    accountType: 'Safe',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://polygonscan.com/tx/',
     userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
@@ -48,6 +52,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#FF9500',
     icon: require('../../assets/images/chains/arbitrum-arb-logo.png'),
     color: '#28A0F0',
+    accountType: 'Safe',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://arbiscan.io/tx/',
     userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
@@ -59,6 +64,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#34C759',
     icon: require('../../assets/images/chains/bitcoin-btc-logo.png'),
     color: '#F7931A',
+    accountType: 'Native',
     addressValidator: validateBitcoinAddress,
   },
   plasma: {
@@ -68,6 +74,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#34C759',
     icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
     color: '#00D4AA',
+    accountType: 'Safe',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://plasma.to/tx/',
   },
@@ -78,6 +85,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     gasColor: '#34C759',
     icon: require('../../assets/images/chains/ethereum-eth-logo.png'),
     color: '#627EEA',
+    accountType: 'Safe',
     addressValidator: validateEvmAddress,
     explorerUrl: 'https://sepolia.etherscan.io/tx/',
     userOpExplorerUrl: 'https://jiffyscan.xyz/userOpHash/',
