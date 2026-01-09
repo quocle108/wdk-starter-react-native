@@ -37,7 +37,7 @@ export default function SettingsScreen() {
     if (!networkModeLoaded) return;
 
     const fetchAddresses = async () => {
-      const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'TESTNET' : 'MAINNET';
+      const sparkNetwork: SparkNetworkMode = networkMode === 'testnet' ? 'REGTEST' : 'MAINNET';
       const allowedNetworks = getNetworksForMode(networkMode);
 
       console.log('[Settings] === Starting fetchAddresses ===');
