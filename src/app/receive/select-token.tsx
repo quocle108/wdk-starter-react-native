@@ -2,8 +2,9 @@ import { assetConfig } from '@/config/assets';
 import getDisplaySymbol from '@/utils/get-display-symbol';
 import { getRecentTokens, addToRecentTokens } from '@/utils/recent-tokens';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
+import { useFocusEffect } from 'expo-router';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { colors } from '@/constants/colors';
 import {
   FlatList,
@@ -34,17 +35,20 @@ export default function ReceiveSelectTokenScreen() {
   const [recentTokens, setRecentTokens] = useState<string[]>([]);
   const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
 
-  useEffect(() => {
-    const loadData = async () => {
-      const [recent, mode] = await Promise.all([
-        getRecentTokens('receive'),
-        getNetworkMode(),
-      ]);
-      setRecentTokens(recent);
-      setNetworkMode(mode);
-    };
-    loadData();
-  }, []);
+  // Load network mode on focus to pick up changes from settings
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        const [recent, mode] = await Promise.all([
+          getRecentTokens('receive'),
+          getNetworkMode(),
+        ]);
+        setRecentTokens(recent);
+        setNetworkMode(mode);
+      };
+      loadData();
+    }, [])
+  );
 
   const tokens: Token[] = useMemo(() => {
     return Object.entries(assetConfig)

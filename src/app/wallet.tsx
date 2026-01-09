@@ -54,12 +54,15 @@ export default function WalletScreen() {
   const [networkMode, setNetworkMode] = useState<NetworkMode | null>(null);
   const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
 
-  useEffect(() => {
-    getNetworkMode().then((mode) => {
-      setNetworkMode(mode);
-      setNetworkModeLoaded(true);
-    });
-  }, []);
+  // Load network mode on mount and when screen gains focus (after settings change)
+  useFocusEffect(
+    useCallback(() => {
+      getNetworkMode().then((mode) => {
+        setNetworkMode(mode);
+        setNetworkModeLoaded(true);
+      });
+    }, [])
+  );
 
   const tokenConfigs = useMemo(() => {
     if (!networkModeLoaded) {

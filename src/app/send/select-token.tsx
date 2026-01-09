@@ -1,6 +1,7 @@
 import { assetConfig, AssetTicker } from '@/config/assets';
 import { useLocalSearchParams } from 'expo-router';
 import { useDebouncedNavigation } from '@/hooks/use-debounced-navigation';
+import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,25 +24,37 @@ export default function SelectTokenScreen() {
   const { wallets, activeWalletId } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
   const { isInitialized } = useWallet({ walletId: currentWalletId });
-  const tokenConfigs = useMemo(() => getTokenConfigs(), []);
-  const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, { enabled: isInitialized });
 
   const { scannedAddress } = params as { scannedAddress?: string };
   const [recentTokens, setRecentTokens] = useState<string[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [networkMode, setNetworkMode] = useState<NetworkMode>('mainnet');
+  const [networkModeLoaded, setNetworkModeLoaded] = useState(false);
 
-  useEffect(() => {
-    const loadData = async () => {
-      const [recent, mode] = await Promise.all([
-        getRecentTokens('send'),
-        getNetworkMode(),
-      ]);
-      setRecentTokens(recent);
-      setNetworkMode(mode);
-    };
-    loadData();
-  }, []);
+  // Load network mode on focus to pick up changes from settings
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        const [recent, mode] = await Promise.all([
+          getRecentTokens('send'),
+          getNetworkMode(),
+        ]);
+        setRecentTokens(recent);
+        setNetworkMode(mode);
+        setNetworkModeLoaded(true);
+      };
+      loadData();
+    }, [])
+  );
+
+  const tokenConfigs = useMemo(() => {
+    if (!networkModeLoaded) return {};
+    return getTokenConfigs(networkMode);
+  }, [networkMode, networkModeLoaded]);
+
+  const { data: balanceResults } = useBalancesForWallet(0, tokenConfigs, {
+    enabled: isInitialized && networkModeLoaded && Object.keys(tokenConfigs).length > 0
+  });
 
   useEffect(() => {
     const calculateTokensWithFiatValues = async () => {
