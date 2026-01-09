@@ -335,14 +335,14 @@ The app includes comprehensive Node.js polyfills for React Native compatibility 
 ## 🔗 Version & Compatibility
 
 ### Core Dependencies
-- **Expo**: ~54.0.8
+- **Expo**: 54.0.31
 - **React**: 19.1.0
 - **React Native**: 0.81.4
-- **TypeScript**: ~5.9.2
+- **TypeScript**: 5.9.2
 
 ### Key Features
 - **New Architecture**: Enabled in `app.json` for improved performance
-- **React Native Reanimated**: ~4.1.0 for smooth animations
+- **React Native Reanimated**: 4.1.6 for smooth animations
 - **React Compiler**: Enabled for automatic memoization
 
 ### Platform Requirements
