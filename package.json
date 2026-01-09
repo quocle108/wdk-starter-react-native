@@ -122,7 +122,6 @@
     "jest-expo": "~54.0.13",
     "prettier": "^3.6.2",
     "react-native-svg-transformer": "^1.5.1",
-    "sharp-cli": "^5.2.0",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
