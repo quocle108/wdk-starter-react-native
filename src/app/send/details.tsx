@@ -446,21 +446,33 @@ export default function SendDetailsScreen() {
       // For native tokens (ETH), use zero address
       const tokenContractAddress = tokenAddress || '0x0000000000000000000000000000000000000000';
 
-      // Adjust transferMaxFee based on network (mainnet needs higher fees)
-      const maxFeeByNetwork: Record<string, number> = {
-        ethereum: 2000000,  // 2 USDT for Ethereum mainnet (higher gas)
-        arbitrum: 500000,   // 0.5 USDT for Arbitrum
-        polygon: 500000,    // 0.5 USDT for Polygon
-        sepolia: 500000,    // 0.5 USDT for Sepolia testnet
-        plasma: 500000,     // 0.5 USDT for Plasma
-      };
+      // Build transfer parameters based on network type
+      let transferParams: Record<string, unknown>;
 
-      const transferParams = {
-        token: tokenContractAddress,
-        recipient: recipientAddress,
-        amount: Number(amountInSmallestUnit),
-        transferMaxFee: maxFeeByNetwork[networkId] || 500000,
-      };
+      if (networkId === 'spark') {
+        // Spark uses different parameter format: tokenAmount in satoshis
+        transferParams = {
+          tokenAmount: Number(amountInSmallestUnit),
+          receiverSparkAddress: recipientAddress,
+        };
+      } else {
+        // EVM networks (Safe accounts) use standard transfer params
+        // Adjust transferMaxFee based on network (mainnet needs higher fees)
+        const maxFeeByNetwork: Record<string, number> = {
+          ethereum: 2000000,  // 2 USDT for Ethereum mainnet (higher gas)
+          arbitrum: 500000,   // 0.5 USDT for Arbitrum
+          polygon: 500000,    // 0.5 USDT for Polygon
+          sepolia: 500000,    // 0.5 USDT for Sepolia testnet
+          plasma: 500000,     // 0.5 USDT for Plasma
+        };
+
+        transferParams = {
+          token: tokenContractAddress,
+          recipient: recipientAddress,
+          amount: Number(amountInSmallestUnit),
+          transferMaxFee: maxFeeByNetwork[networkId] || 500000,
+        };
+      }
 
       const result = await callAccountMethod<{ fee: string; hash: string }>(
         networkId,
