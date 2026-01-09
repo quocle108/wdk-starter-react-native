@@ -246,14 +246,14 @@ export default function WalletScreen() {
     }, [isInitialized, networkModeLoaded, refreshBalance, refetch])
   );
 
-  // Auto-refresh balances every 30 seconds
+  // Auto-refresh balances every 60 seconds (reduced from 30s to avoid rate limiting)
   useEffect(() => {
     if (!isInitialized || !networkModeLoaded) return;
 
     const intervalId = setInterval(() => {
       refreshBalance({ accountIndex: 0, type: 'wallet' });
       refetch();
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(intervalId);
   }, [isInitialized, networkModeLoaded, refreshBalance, refetch]);
