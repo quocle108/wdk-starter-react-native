@@ -237,7 +237,7 @@ export default function SendDetailsScreen() {
       if (!isBtc || (isBtc && amount && parseFloat(amount) > 0)) {
         handleCalculateGasFee(false, amount);
       }
-    }, 30000); // 30 seconds
+    }, 60000); // 60 seconds to avoid API rate limits
 
     return () => clearInterval(interval);
   }, [tokenId, handleCalculateGasFee, amount]);
