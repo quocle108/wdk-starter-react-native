@@ -461,10 +461,10 @@ export default function SendDetailsScreen() {
       let transferParams: Record<string, unknown>;
 
       if (networkId === 'spark') {
-        // Spark SDK: { to: 'spark1...', value: satoshis }
+        // Spark transfer: amount in satoshis
         transferParams = {
           to: recipientAddress,
-          value: amountInSmallestUnit.toString(),
+          amount: Number(amountInSmallestUnit),
         };
         console.log('[Spark Transfer] params:', JSON.stringify(transferParams));
       } else {
