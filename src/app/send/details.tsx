@@ -461,9 +461,9 @@ export default function SendDetailsScreen() {
       let transferParams: Record<string, unknown>;
 
       if (networkId === 'spark') {
-        // Spark transfer: { address, amount } in satoshis
+        // Spark transfer: use 'recipient' (WDK normalizes field names)
         transferParams = {
-          address: recipientAddress,
+          recipient: recipientAddress,
           amount: Number(amountInSmallestUnit),
         };
         console.log('[Spark Transfer] params:', JSON.stringify(transferParams));
