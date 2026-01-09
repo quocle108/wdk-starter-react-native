@@ -461,10 +461,10 @@ export default function SendDetailsScreen() {
       let transferParams: Record<string, unknown>;
 
       if (networkId === 'spark') {
-        // Spark transfer: use 'recipient' (WDK normalizes field names)
+        // Spark SDK: transfer({ amountSats, receiverSparkAddress })
         transferParams = {
-          recipient: recipientAddress,
-          amount: Number(amountInSmallestUnit),
+          amountSats: Number(amountInSmallestUnit),
+          receiverSparkAddress: recipientAddress,
         };
         console.log('[Spark Transfer] params:', JSON.stringify(transferParams));
       } else {
