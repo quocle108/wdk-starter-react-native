@@ -66,6 +66,7 @@ export const networkConfigs: Record<NetworkType, Network> = {
     color: '#F7931A',
     accountType: 'Native',
     addressValidator: validateSparkAddress,
+    explorerUrl: 'https://sparkscan.io/tx/',
   },
   plasma: {
     id: 'plasma',

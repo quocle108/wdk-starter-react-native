@@ -467,7 +467,6 @@ export default function SendDetailsScreen() {
           to: recipientAddress,
           value: Number(amountInSmallestUnit),
         };
-        console.log('[Spark Transfer] params:', JSON.stringify(transferParams));
 
         // Use sendTransaction method for Spark native BTC
         const result = await callAccountMethod<{ fee: string; hash: string }>(
@@ -578,6 +577,11 @@ export default function SendDetailsScreen() {
 
     // Fallback to regular explorer for non-ERC-4337 networks
     if (networkConfig.explorerUrl) {
+      // Spark explorer requires network parameter
+      if (network === 'spark') {
+        const sparkNetwork = networkMode === 'testnet' ? 'regtest' : 'mainnet';
+        return `${networkConfig.explorerUrl}${hash}?network=${sparkNetwork}`;
+      }
       return `${networkConfig.explorerUrl}${hash}`;
     }
 
