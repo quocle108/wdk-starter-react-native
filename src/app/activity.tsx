@@ -79,12 +79,14 @@ export default function ActivityScreen() {
     transformTransactions();
   }, [transactions]);
 
-  // Show message for testnets
+  // Show message for unsupported networks (only Spark regtest is not supported)
   const showTestnetNote = useMemo(() => {
     if (!flatAddresses) return false;
-    // Check if only testnet addresses are available
-    const hasMainnetAddress = flatAddresses.ethereum || flatAddresses.polygon || flatAddresses.arbitrum;
-    return !hasMainnetAddress;
+    // Check if any supported network address exists
+    const hasSupportedAddress = flatAddresses.ethereum || flatAddresses.polygon ||
+      flatAddresses.arbitrum || flatAddresses.plasma || flatAddresses.sepolia;
+    // Only show note if we have spark but no supported networks
+    return flatAddresses.spark && !hasSupportedAddress;
   }, [flatAddresses]);
 
   return (
@@ -100,7 +102,7 @@ export default function ActivityScreen() {
       {showTestnetNote && !isLoading && (
         <View style={styles.messageContainer}>
           <Text style={styles.messageText}>
-            Transaction history is not available for testnet networks (Sepolia, Spark Regtest)
+            Transaction history is not available for Spark Regtest
           </Text>
         </View>
       )}

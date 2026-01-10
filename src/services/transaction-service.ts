@@ -23,8 +23,8 @@ export interface TokenTransferOptions {
   offset?: number;
 }
 
-// Networks supported by the indexer (excludes testnets like sepolia, spark regtest)
-export const SUPPORTED_INDEXER_NETWORKS = ['ethereum', 'polygon', 'arbitrum', 'plasma'] as const;
+// Networks supported by the indexer (spark regtest not supported)
+export const SUPPORTED_INDEXER_NETWORKS = ['ethereum', 'polygon', 'arbitrum', 'plasma', 'sepolia'] as const;
 export type IndexerNetwork = typeof SUPPORTED_INDEXER_NETWORKS[number];
 
 // Token mapping for each network
@@ -33,6 +33,7 @@ export const NETWORK_TOKEN_MAP: Record<IndexerNetwork, string[]> = {
   polygon: ['usdt'],
   arbitrum: ['usdt'],
   plasma: ['usdt'],
+  sepolia: ['usdt'],
 };
 
 /**
