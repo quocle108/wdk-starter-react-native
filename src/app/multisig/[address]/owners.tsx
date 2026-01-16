@@ -3,7 +3,7 @@ import { colors } from '@/constants/colors';
 import { multisigService, StoredSafe } from '@/services/multisig-service';
 import { MultisigNetworkType } from '@/config/multisig-config';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { Copy, Plus, Trash2, Users, RefreshCw } from 'lucide-react-native';
+import { Copy, Plus, Trash2, Users } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -157,7 +157,7 @@ export default function OwnersScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header title="Owners" showBack />
+        <Header title="Owners" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -167,15 +167,7 @@ export default function OwnersScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header
-        title="Owners"
-        showBack
-        rightElement={
-          <TouchableOpacity onPress={loadSafeData}>
-            <RefreshCw size={24} color={colors.primary} />
-          </TouchableOpacity>
-        }
-      />
+      <Header title="Owners" />
 
       <ScrollView
         style={styles.scrollView}

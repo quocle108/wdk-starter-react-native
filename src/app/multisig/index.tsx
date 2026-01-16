@@ -78,7 +78,7 @@ export default function MultisigListScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header title="Multisig Safes" showBack />
+      <Header title="Multisig Safes" />
 
       <ScrollView
         style={styles.scrollView}

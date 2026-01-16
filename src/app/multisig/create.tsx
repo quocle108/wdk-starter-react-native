@@ -166,7 +166,7 @@ export default function CreateSafeScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header title="Create Safe" showBack />
+      <Header title="Create Safe" />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}

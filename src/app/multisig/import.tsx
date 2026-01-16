@@ -121,7 +121,7 @@ export default function ImportSafeScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header title="Import Safe" showBack />
+      <Header title="Import Safe" />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}

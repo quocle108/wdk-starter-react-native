@@ -9,7 +9,6 @@ import {
   ArrowUpRight,
   Clock,
   Copy,
-  RefreshCw,
   Trash2,
   Users,
 } from 'lucide-react-native';
@@ -35,7 +34,6 @@ export default function SafeDetailsScreen() {
 
   const [safe, setSafe] = useState<StoredSafe | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [nativeBalance, setNativeBalance] = useState<string>('0');
   const [usdtBalance, setUsdtBalance] = useState<string>('0');
   const [pendingCount, setPendingCount] = useState(0);
@@ -54,7 +52,6 @@ export default function SafeDetailsScreen() {
       console.error('Failed to load safe data:', error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [address, network]);
 
@@ -63,11 +60,6 @@ export default function SafeDetailsScreen() {
       loadSafeData();
     }, [loadSafeData])
   );
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    loadSafeData();
-  };
 
   const handleCopyAddress = async () => {
     if (address) {
@@ -137,7 +129,7 @@ export default function SafeDetailsScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header title="Safe Details" showBack />
+        <Header title="Safe Details" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -148,7 +140,7 @@ export default function SafeDetailsScreen() {
   if (!safe) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header title="Safe Details" showBack />
+        <Header title="Safe Details" />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Safe not found</Text>
         </View>
@@ -158,18 +150,7 @@ export default function SafeDetailsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header
-        title={safe.name}
-        showBack
-        rightElement={
-          <TouchableOpacity onPress={handleRefresh} disabled={refreshing}>
-            <RefreshCw
-              size={24}
-              color={refreshing ? colors.textTertiary : colors.primary}
-            />
-          </TouchableOpacity>
-        }
-      />
+      <Header title={safe.name} />
 
       <ScrollView
         style={styles.scrollView}

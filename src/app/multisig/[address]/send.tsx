@@ -103,7 +103,7 @@ export default function SendScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header title="Send" showBack />
+      <Header title="Send" />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}

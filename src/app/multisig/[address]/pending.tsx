@@ -109,7 +109,7 @@ export default function PendingTransactionsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header title="Pending Transactions" showBack />
+      <Header title="Pending Transactions" />
 
       <ScrollView
         style={styles.scrollView}
