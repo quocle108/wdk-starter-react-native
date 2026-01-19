@@ -97,20 +97,48 @@ export default function SafeDetailsScreen() {
     setDeploying(true);
 
     try {
-      const newAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+      const config = getMultisigNetworkConfig(network);
+
+      console.log('[DeploySafe] Starting Safe deployment...');
+      console.log('[DeploySafe] Network:', network);
+      console.log('[DeploySafe] Config:', JSON.stringify(config, null, 2));
+      console.log('[DeploySafe] Safe Name:', safe.name);
+      console.log('[DeploySafe] Owners:', safe.owners);
+      console.log('[DeploySafe] Threshold:', safe.threshold);
+
+      // TODO: Call actual WDK SDK to deploy Safe
+      // const walletManager = new WalletManagerEvmMultisigSafe({
+      //   rpcUrl: config.rpcUrl,
+      //   chainId: config.chainId,
+      //   paymasterUrl: config.paymasterUrl,
+      // });
+      // const safeAccount = await walletManager.createSafe({
+      //   owners: safe.owners,
+      //   threshold: safe.threshold,
+      // });
+      // const deployedAddress = safeAccount.address;
+
+      console.log('[DeploySafe] Deploying Safe to blockchain...');
+
+      // Simulated deployment - replace with actual SDK call
+      const deployedAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+
+      console.log('[DeploySafe] Safe deployed at:', deployedAddress);
 
       await multisigService.updateSafe(address!, network, {
-        address: newAddress,
+        address: deployedAddress,
         status: 'deployed',
       });
+
+      console.log('[DeploySafe] Safe updated in storage with status: deployed');
 
       toast.success('Safe deployed successfully!');
       router.replace({
         pathname: '/multisig/[address]',
-        params: { address: newAddress, network },
+        params: { address: deployedAddress, network },
       });
     } catch (error) {
-      console.error('Failed to deploy safe:', error);
+      console.error('[DeploySafe] Failed to deploy safe:', error);
       Alert.alert('Error', 'Failed to deploy Safe. Please try again.');
     } finally {
       setDeploying(false);

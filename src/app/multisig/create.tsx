@@ -142,10 +142,34 @@ export default function CreateSafeScreen() {
     try {
       const config = getMultisigNetworkConfig(selectedNetwork!);
 
-      const predictedAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+      console.log('[CreateSafe] Starting Safe deployment...');
+      console.log('[CreateSafe] Network:', selectedNetwork);
+      console.log('[CreateSafe] Config:', JSON.stringify(config, null, 2));
+      console.log('[CreateSafe] Owners:', validOwners);
+      console.log('[CreateSafe] Threshold:', threshold);
+      console.log('[CreateSafe] My Address:', myAddress);
+
+      // TODO: Call actual WDK SDK to deploy Safe
+      // const walletManager = new WalletManagerEvmMultisigSafe({
+      //   rpcUrl: config.rpcUrl,
+      //   chainId: config.chainId,
+      //   paymasterUrl: config.paymasterUrl,
+      // });
+      // const safeAccount = await walletManager.createSafe({
+      //   owners: validOwners,
+      //   threshold: threshold,
+      // });
+      // const deployedAddress = safeAccount.address;
+
+      console.log('[CreateSafe] Deploying Safe to blockchain...');
+
+      // Simulated deployment - replace with actual SDK call
+      const deployedAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+
+      console.log('[CreateSafe] Safe deployed at:', deployedAddress);
 
       await multisigService.addSafe({
-        address: predictedAddress,
+        address: deployedAddress,
         network: selectedNetwork!,
         name: safeName.trim(),
         owners: validOwners,
@@ -154,10 +178,12 @@ export default function CreateSafeScreen() {
         status: 'deployed',
       });
 
+      console.log('[CreateSafe] Safe saved to storage');
+
       toast.success('Safe created successfully!');
       router.back();
     } catch (error) {
-      console.error('Failed to create safe:', error);
+      console.error('[CreateSafe] Failed to create safe:', error);
       Alert.alert('Error', 'Failed to create Safe. Please try again.');
     } finally {
       setCreating(false);
@@ -173,6 +199,12 @@ export default function CreateSafeScreen() {
     try {
       const pendingId = `pending_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
 
+      console.log('[CreateSafe] Saving Safe for later...');
+      console.log('[CreateSafe] Network:', selectedNetwork);
+      console.log('[CreateSafe] Owners:', validOwners);
+      console.log('[CreateSafe] Threshold:', threshold);
+      console.log('[CreateSafe] Pending ID:', pendingId);
+
       await multisigService.addSafe({
         address: pendingId,
         network: selectedNetwork!,
@@ -183,10 +215,12 @@ export default function CreateSafeScreen() {
         status: 'pending',
       });
 
+      console.log('[CreateSafe] Safe configuration saved with status: pending');
+
       toast.success('Safe configuration saved');
       router.back();
     } catch (error) {
-      console.error('Failed to save safe:', error);
+      console.error('[CreateSafe] Failed to save safe:', error);
       Alert.alert('Error', 'Failed to save Safe configuration. Please try again.');
     } finally {
       setCreating(false);
