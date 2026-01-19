@@ -144,7 +144,8 @@ export default function CreateSafeScreen() {
 
       console.log('[CreateSafe] Starting Safe deployment...');
       console.log('[CreateSafe] Network:', selectedNetwork);
-      console.log('[CreateSafe] Config:', JSON.stringify(config, null, 2));
+      console.log('[CreateSafe] Chain ID:', config.chainId.toString());
+      console.log('[CreateSafe] Provider:', config.provider);
       console.log('[CreateSafe] Owners:', validOwners);
       console.log('[CreateSafe] Threshold:', threshold);
       console.log('[CreateSafe] My Address:', myAddress);

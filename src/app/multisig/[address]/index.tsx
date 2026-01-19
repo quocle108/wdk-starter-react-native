@@ -101,7 +101,8 @@ export default function SafeDetailsScreen() {
 
       console.log('[DeploySafe] Starting Safe deployment...');
       console.log('[DeploySafe] Network:', network);
-      console.log('[DeploySafe] Config:', JSON.stringify(config, null, 2));
+      console.log('[DeploySafe] Chain ID:', config.chainId.toString());
+      console.log('[DeploySafe] Provider:', config.provider);
       console.log('[DeploySafe] Safe Name:', safe.name);
       console.log('[DeploySafe] Owners:', safe.owners);
       console.log('[DeploySafe] Threshold:', safe.threshold);
