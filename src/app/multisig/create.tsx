@@ -152,12 +152,11 @@ export default function CreateSafeScreen() {
       console.log('[CreateSafe] My Address:', myAddress);
       console.log('[CreateSafe] Safe Modules Version:', config.safeModulesVersion);
 
-      const timestamp = Date.now().toString(16).padStart(12, '0');
-      const random1 = Math.random().toString(16).slice(2, 14);
-      const random2 = Math.random().toString(16).slice(2, 14);
-      const random3 = Math.random().toString(16).slice(2, 14);
-      const random4 = Math.random().toString(16).slice(2, 14);
-      const saltNonce = `0x${timestamp}${random1}${random2}${random3}${random4}`.slice(0, 66);
+      const timestamp = Date.now().toString(16).padStart(16, '0');
+      const random1 = Math.random().toString(16).slice(2, 18);
+      const random2 = Math.random().toString(16).slice(2, 18);
+      const random3 = Math.random().toString(16).slice(2, 18);
+      const saltNonce = `0x${timestamp}${random1}${random2}${random3}`.padEnd(66, '0');
       console.log('[CreateSafe] Salt Nonce:', saltNonce);
 
       const predictedAddress = Safe4337Pack.predictSafeAddress({
@@ -205,12 +204,11 @@ export default function CreateSafeScreen() {
 
     try {
       const config = getMultisigNetworkConfig(selectedNetwork!);
-      const timestamp = Date.now().toString(16).padStart(12, '0');
-      const random1 = Math.random().toString(16).slice(2, 14);
-      const random2 = Math.random().toString(16).slice(2, 14);
-      const random3 = Math.random().toString(16).slice(2, 14);
-      const random4 = Math.random().toString(16).slice(2, 14);
-      const saltNonce = `0x${timestamp}${random1}${random2}${random3}${random4}`.slice(0, 66);
+      const timestamp = Date.now().toString(16).padStart(16, '0');
+      const random1 = Math.random().toString(16).slice(2, 18);
+      const random2 = Math.random().toString(16).slice(2, 18);
+      const random3 = Math.random().toString(16).slice(2, 18);
+      const saltNonce = `0x${timestamp}${random1}${random2}${random3}`.padEnd(66, '0');
 
       console.log('[CreateSafe] Saving Safe for later...');
       console.log('[CreateSafe] Network:', selectedNetwork);
