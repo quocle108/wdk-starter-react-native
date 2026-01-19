@@ -70,14 +70,39 @@ export default function MultisigListScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (selectedNetwork && addresses?.[selectedNetwork]?.[0]) {
-        const addr = addresses[selectedNetwork][0];
-        setSignerAddress(addr);
-        console.log('[MultisigList] Signer address:', addr);
-        console.log('[MultisigList] Selected network:', selectedNetwork);
+      const fetchSignerData = async () => {
+        if (selectedNetwork && addresses?.[selectedNetwork]?.[0]) {
+          const addr = addresses[selectedNetwork][0];
+          setSignerAddress(addr);
+          console.log('[MultisigList] Signer address:', addr);
+          console.log('[MultisigList] Selected network:', selectedNetwork);
 
-        setSignerBalance('0.00');
-      }
+          try {
+            const config = getMultisigNetworkConfig(selectedNetwork);
+            const response = await fetch(config.provider, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'eth_getBalance',
+                params: [addr, 'latest'],
+                id: 1,
+              }),
+            });
+            const data = await response.json();
+            if (data.result) {
+              const balanceWei = BigInt(data.result);
+              const balanceEth = Number(balanceWei) / 1e18;
+              setSignerBalance(balanceEth.toFixed(4));
+              console.log('[MultisigList] Signer balance:', balanceEth.toFixed(4), 'ETH');
+            }
+          } catch (error) {
+            console.error('[MultisigList] Failed to fetch balance:', error);
+            setSignerBalance('0.00');
+          }
+        }
+      };
+      fetchSignerData();
     }, [selectedNetwork, addresses])
   );
 
