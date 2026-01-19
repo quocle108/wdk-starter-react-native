@@ -8,6 +8,7 @@ import { networkConfigs } from '@/config/networks';
 import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import { validateEvmAddress } from '@/utils/address-validators';
 import { Plus, Trash2, Users, ChevronDown } from 'lucide-react-native';
+import { Safe4337Pack } from '@wdk-safe-global/relay-kit';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -149,39 +150,39 @@ export default function CreateSafeScreen() {
       console.log('[CreateSafe] Owners:', validOwners);
       console.log('[CreateSafe] Threshold:', threshold);
       console.log('[CreateSafe] My Address:', myAddress);
+      console.log('[CreateSafe] Safe Modules Version:', config.safeModulesVersion);
 
-      // TODO: Call actual WDK SDK to deploy Safe
-      // const walletManager = new WalletManagerEvmMultisigSafe({
-      //   rpcUrl: config.rpcUrl,
-      //   chainId: config.chainId,
-      //   paymasterUrl: config.paymasterUrl,
-      // });
-      // const safeAccount = await walletManager.createSafe({
-      //   owners: validOwners,
-      //   threshold: threshold,
-      // });
-      // const deployedAddress = safeAccount.address;
+      const saltNonce = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10).padStart(56, '0')}`;
+      console.log('[CreateSafe] Salt Nonce:', saltNonce);
 
-      console.log('[CreateSafe] Deploying Safe to blockchain...');
+      const predictedAddress = Safe4337Pack.predictSafeAddress({
+        owners: validOwners,
+        threshold,
+        saltNonce,
+        chainId: config.chainId,
+        safeVersion: '1.4.1',
+        safeModulesVersion: config.safeModulesVersion,
+      });
 
-      // Simulated deployment - replace with actual SDK call
-      const deployedAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
-
-      console.log('[CreateSafe] Safe deployed at:', deployedAddress);
+      console.log('[CreateSafe] Predicted Safe address:', predictedAddress);
+      console.log('[CreateSafe] NOTE: Actual deployment requires sending first transaction from Safe');
+      console.log('[CreateSafe] The Safe will be deployed when executing first transaction via bundler');
 
       await multisigService.addSafe({
-        address: deployedAddress,
+        address: predictedAddress,
         network: selectedNetwork!,
         name: safeName.trim(),
         owners: validOwners,
         threshold,
         createdAt: Date.now(),
-        status: 'deployed',
+        status: 'pending',
+        saltNonce,
       });
 
-      console.log('[CreateSafe] Safe saved to storage');
+      console.log('[CreateSafe] Safe configuration saved with predicted address');
+      console.log('[CreateSafe] Status: pending (deploy on first transaction)');
 
-      toast.success('Safe created successfully!');
+      toast.success('Safe created! Deploy on first transaction.');
       router.back();
     } catch (error) {
       console.error('[CreateSafe] Failed to create safe:', error);
@@ -198,22 +199,35 @@ export default function CreateSafeScreen() {
     setCreating(true);
 
     try {
-      const pendingId = `pending_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+      const config = getMultisigNetworkConfig(selectedNetwork!);
+      const saltNonce = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10).padStart(56, '0')}`;
 
       console.log('[CreateSafe] Saving Safe for later...');
       console.log('[CreateSafe] Network:', selectedNetwork);
       console.log('[CreateSafe] Owners:', validOwners);
       console.log('[CreateSafe] Threshold:', threshold);
-      console.log('[CreateSafe] Pending ID:', pendingId);
+      console.log('[CreateSafe] Salt Nonce:', saltNonce);
+
+      const predictedAddress = Safe4337Pack.predictSafeAddress({
+        owners: validOwners,
+        threshold,
+        saltNonce,
+        chainId: config.chainId,
+        safeVersion: '1.4.1',
+        safeModulesVersion: config.safeModulesVersion,
+      });
+
+      console.log('[CreateSafe] Predicted Safe address:', predictedAddress);
 
       await multisigService.addSafe({
-        address: pendingId,
+        address: predictedAddress,
         network: selectedNetwork!,
         name: safeName.trim(),
         owners: validOwners,
         threshold,
         createdAt: Date.now(),
         status: 'pending',
+        saltNonce,
       });
 
       console.log('[CreateSafe] Safe configuration saved with status: pending');

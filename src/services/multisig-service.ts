@@ -13,6 +13,7 @@ export interface StoredSafe {
   threshold: number;
   createdAt: number;
   status: SafeStatus;
+  saltNonce?: string;
 }
 
 export interface SafeInfo {
