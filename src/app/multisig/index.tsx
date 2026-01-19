@@ -64,7 +64,10 @@ export default function MultisigListScreen() {
     });
   };
 
-  const formatAddress = (address: string) => {
+  const formatAddress = (address: string, isPending: boolean) => {
+    if (isPending) {
+      return 'Not deployed yet';
+    }
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -114,30 +117,42 @@ export default function MultisigListScreen() {
             </View>
           ) : (
             <View style={styles.safesList}>
-              {safes.map((safe) => (
-                <TouchableOpacity
-                  key={`${safe.network}-${safe.address}`}
-                  style={styles.safeCard}
-                  onPress={() => handleSafePress(safe)}
-                >
-                  <View style={styles.safeIconContainer}>
-                    <Image source={getNetworkIcon(safe.network)} style={styles.networkIcon} />
-                  </View>
-
-                  <View style={styles.safeInfo}>
-                    <Text style={styles.safeName}>{safe.name}</Text>
-                    <Text style={styles.safeAddress}>{formatAddress(safe.address)}</Text>
-                    <View style={styles.safeDetails}>
-                      <Text style={styles.safeNetwork}>{getNetworkName(safe.network)}</Text>
-                      <Text style={styles.safeThreshold}>
-                        {safe.threshold}/{safe.owners.length}
-                      </Text>
+              {safes.map((safe) => {
+                const isPending = safe.status === 'pending';
+                return (
+                  <TouchableOpacity
+                    key={`${safe.network}-${safe.address}`}
+                    style={[styles.safeCard, isPending && styles.safeCardPending]}
+                    onPress={() => handleSafePress(safe)}
+                  >
+                    <View style={styles.safeIconContainer}>
+                      <Image source={getNetworkIcon(safe.network)} style={styles.networkIcon} />
                     </View>
-                  </View>
 
-                  <ChevronRight size={20} color={colors.textTertiary} />
-                </TouchableOpacity>
-              ))}
+                    <View style={styles.safeInfo}>
+                      <View style={styles.safeNameRow}>
+                        <Text style={styles.safeName}>{safe.name}</Text>
+                        {isPending && (
+                          <View style={styles.pendingBadge}>
+                            <Text style={styles.pendingBadgeText}>Pending</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.safeAddress, isPending && styles.safeAddressPending]}>
+                        {formatAddress(safe.address, isPending)}
+                      </Text>
+                      <View style={styles.safeDetails}>
+                        <Text style={styles.safeNetwork}>{getNetworkName(safe.network)}</Text>
+                        <Text style={styles.safeThreshold}>
+                          {safe.threshold}/{safe.owners.length}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <ChevronRight size={20} color={colors.textTertiary} />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </View>
@@ -220,6 +235,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
   },
+  safeCardPending: {
+    borderWidth: 1,
+    borderColor: colors.warning,
+    borderStyle: 'dashed',
+  },
   safeIconContainer: {
     width: 44,
     height: 44,
@@ -236,17 +256,37 @@ const styles = StyleSheet.create({
   safeInfo: {
     flex: 1,
   },
+  safeNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 2,
+  },
   safeName: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 2,
+  },
+  pendingBadge: {
+    backgroundColor: colors.warning + '20',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  pendingBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.warning,
   },
   safeAddress: {
     fontSize: 13,
     color: colors.textSecondary,
     fontFamily: 'monospace',
     marginBottom: 4,
+  },
+  safeAddressPending: {
+    fontFamily: undefined,
+    fontStyle: 'italic',
   },
   safeDetails: {
     flexDirection: 'row',

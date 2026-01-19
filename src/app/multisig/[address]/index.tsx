@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Clock,
   Copy,
+  Rocket,
   Trash2,
   Users,
 } from 'lucide-react-native';
@@ -34,6 +35,7 @@ export default function SafeDetailsScreen() {
 
   const [safe, setSafe] = useState<StoredSafe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deploying, setDeploying] = useState(false);
   const [nativeBalance, setNativeBalance] = useState<string>('0');
   const [usdtBalance, setUsdtBalance] = useState<string>('0');
   const [pendingCount, setPendingCount] = useState(0);
@@ -87,6 +89,32 @@ export default function SafeDetailsScreen() {
       pathname: '/multisig/[address]/owners',
       params: { address, network },
     });
+  };
+
+  const handleDeployNow = async () => {
+    if (!safe || !network) return;
+
+    setDeploying(true);
+
+    try {
+      const newAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
+
+      await multisigService.updateSafe(address!, network, {
+        address: newAddress,
+        status: 'deployed',
+      });
+
+      toast.success('Safe deployed successfully!');
+      router.replace({
+        pathname: '/multisig/[address]',
+        params: { address: newAddress, network },
+      });
+    } catch (error) {
+      console.error('Failed to deploy safe:', error);
+      Alert.alert('Error', 'Failed to deploy Safe. Please try again.');
+    } finally {
+      setDeploying(false);
+    }
   };
 
   const handleRemoveSafe = () => {
@@ -148,6 +176,8 @@ export default function SafeDetailsScreen() {
     );
   }
 
+  const isPending = safe.status === 'pending';
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Header title={safe.name} />
@@ -157,16 +187,26 @@ export default function SafeDetailsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {isPending && (
+          <View style={styles.pendingBanner}>
+            <Text style={styles.pendingBannerText}>
+              This Safe has not been deployed yet
+            </Text>
+          </View>
+        )}
+
         <View style={styles.safeHeader}>
           <View style={styles.networkBadge}>
             <Image source={getNetworkIcon()} style={styles.networkIcon} />
             <Text style={styles.networkName}>{getNetworkName()}</Text>
           </View>
 
-          <TouchableOpacity style={styles.addressRow} onPress={handleCopyAddress}>
-            <Text style={styles.address}>{formatAddress(address!)}</Text>
-            <Copy size={16} color={colors.primary} />
-          </TouchableOpacity>
+          {!isPending && (
+            <TouchableOpacity style={styles.addressRow} onPress={handleCopyAddress}>
+              <Text style={styles.address}>{formatAddress(address!)}</Text>
+              <Copy size={16} color={colors.primary} />
+            </TouchableOpacity>
+          )}
 
           <View style={styles.thresholdBadge}>
             <Text style={styles.thresholdText}>
@@ -175,49 +215,84 @@ export default function SafeDetailsScreen() {
           </View>
         </View>
 
-        <View style={styles.balanceSection}>
-          <Text style={styles.sectionTitle}>Balance</Text>
+        {isPending ? (
+          <View style={styles.deploySection}>
+            <Text style={styles.deployTitle}>Deploy Your Safe</Text>
+            <Text style={styles.deployDescription}>
+              Deploy this Safe to the blockchain to start using it. You will need ETH to pay for gas fees.
+            </Text>
 
-          <View style={styles.balanceCard}>
-            <View style={styles.balanceRow}>
-              <Text style={styles.tokenName}>{networkConfig?.nativeToken.symbol || 'ETH'}</Text>
-              <Text style={styles.balanceValue}>{nativeBalance}</Text>
-            </View>
-
-            <View style={styles.balanceDivider} />
-
-            <View style={styles.balanceRow}>
-              <Text style={styles.tokenName}>{networkConfig?.usdtToken.symbol || 'USDT'}</Text>
-              <Text style={styles.balanceValue}>{usdtBalance}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Actions</Text>
-
-          <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionCard} onPress={handleSend}>
-              <ArrowUpRight size={24} color={colors.primary} />
-              <Text style={styles.actionText}>Send</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionCard} onPress={handlePending}>
-              <Clock size={24} color={colors.primary} />
-              <Text style={styles.actionText}>Pending</Text>
-              {pendingCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{pendingCount}</Text>
-                </View>
+            <TouchableOpacity
+              style={[styles.deployButton, deploying && styles.deployButtonDisabled]}
+              onPress={handleDeployNow}
+              disabled={deploying}
+            >
+              {deploying ? (
+                <ActivityIndicator size="small" color={colors.text} />
+              ) : (
+                <>
+                  <Rocket size={20} color={colors.text} />
+                  <Text style={styles.deployButtonText}>Deploy Now</Text>
+                </>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionCard} onPress={handleOwners}>
-              <Users size={24} color={colors.primary} />
-              <Text style={styles.actionText}>Owners</Text>
-            </TouchableOpacity>
+            <View style={styles.ownersPreview}>
+              <Text style={styles.ownersPreviewTitle}>Owners ({safe.owners.length})</Text>
+              {safe.owners.map((owner, index) => (
+                <Text key={index} style={styles.ownerAddress}>
+                  {owner.slice(0, 10)}...{owner.slice(-8)}
+                </Text>
+              ))}
+            </View>
           </View>
-        </View>
+        ) : (
+          <>
+            <View style={styles.balanceSection}>
+              <Text style={styles.sectionTitle}>Balance</Text>
+
+              <View style={styles.balanceCard}>
+                <View style={styles.balanceRow}>
+                  <Text style={styles.tokenName}>{networkConfig?.nativeToken.symbol || 'ETH'}</Text>
+                  <Text style={styles.balanceValue}>{nativeBalance}</Text>
+                </View>
+
+                <View style={styles.balanceDivider} />
+
+                <View style={styles.balanceRow}>
+                  <Text style={styles.tokenName}>{networkConfig?.usdtToken.symbol || 'USDT'}</Text>
+                  <Text style={styles.balanceValue}>{usdtBalance}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.actionsSection}>
+              <Text style={styles.sectionTitle}>Actions</Text>
+
+              <View style={styles.actionsGrid}>
+                <TouchableOpacity style={styles.actionCard} onPress={handleSend}>
+                  <ArrowUpRight size={24} color={colors.primary} />
+                  <Text style={styles.actionText}>Send</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionCard} onPress={handlePending}>
+                  <Clock size={24} color={colors.primary} />
+                  <Text style={styles.actionText}>Pending</Text>
+                  {pendingCount > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{pendingCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionCard} onPress={handleOwners}>
+                  <Users size={24} color={colors.primary} />
+                  <Text style={styles.actionText}>Owners</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        )}
 
         <View style={styles.dangerSection}>
           <TouchableOpacity style={styles.removeButton} onPress={handleRemoveSafe}>
@@ -225,7 +300,9 @@ export default function SafeDetailsScreen() {
             <Text style={styles.removeButtonText}>Remove Safe</Text>
           </TouchableOpacity>
           <Text style={styles.removeHint}>
-            This only removes the Safe from your app. It will not affect the Safe on-chain.
+            {isPending
+              ? 'This will delete the saved Safe configuration.'
+              : 'This only removes the Safe from your app. It will not affect the Safe on-chain.'}
           </Text>
         </View>
       </ScrollView>
@@ -243,6 +320,19 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+  },
+  pendingBanner: {
+    backgroundColor: colors.warning + '20',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.warning + '40',
+  },
+  pendingBannerText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.warning,
+    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -338,6 +428,59 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
+  },
+  deploySection: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  deployTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  deployDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  deployButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  deployButtonDisabled: {
+    opacity: 0.6,
+  },
+  deployButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  ownersPreview: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 24,
+  },
+  ownersPreviewTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  ownerAddress: {
+    fontSize: 13,
+    fontFamily: 'monospace',
+    color: colors.textSecondary,
+    paddingVertical: 6,
   },
   actionsSection: {
     paddingHorizontal: 20,

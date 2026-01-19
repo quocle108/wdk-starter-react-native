@@ -108,42 +108,50 @@ export default function CreateSafeScreen() {
     return true;
   };
 
-  const handleCreate = async () => {
+  const validateForm = (): string[] | null => {
     if (!selectedNetwork) {
       Alert.alert('Error', 'Please select a network');
-      return;
+      return null;
     }
 
     if (!safeName.trim()) {
       Alert.alert('Error', 'Please enter a name for the Safe');
-      return;
+      return null;
     }
 
     if (!validateOwners()) {
-      return;
+      return null;
     }
 
     const validOwners = owners.filter((o) => o.trim() !== '');
 
     if (threshold < 1 || threshold > validOwners.length) {
       Alert.alert('Error', `Threshold must be between 1 and ${validOwners.length}`);
-      return;
+      return null;
     }
+
+    return validOwners;
+  };
+
+  const handleCreateNow = async () => {
+    const validOwners = validateForm();
+    if (!validOwners) return;
 
     setCreating(true);
 
     try {
-      const config = getMultisigNetworkConfig(selectedNetwork);
+      const config = getMultisigNetworkConfig(selectedNetwork!);
 
-      const predictedAddress = `0x${Date.now().toString(16)}...pending`;
+      const predictedAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
 
       await multisigService.addSafe({
         address: predictedAddress,
-        network: selectedNetwork,
+        network: selectedNetwork!,
         name: safeName.trim(),
         owners: validOwners,
         threshold,
         createdAt: Date.now(),
+        status: 'deployed',
       });
 
       toast.success('Safe created successfully!');
@@ -151,6 +159,35 @@ export default function CreateSafeScreen() {
     } catch (error) {
       console.error('Failed to create safe:', error);
       Alert.alert('Error', 'Failed to create Safe. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleSaveForLater = async () => {
+    const validOwners = validateForm();
+    if (!validOwners) return;
+
+    setCreating(true);
+
+    try {
+      const pendingId = `pending_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+
+      await multisigService.addSafe({
+        address: pendingId,
+        network: selectedNetwork!,
+        name: safeName.trim(),
+        owners: validOwners,
+        threshold,
+        createdAt: Date.now(),
+        status: 'pending',
+      });
+
+      toast.success('Safe configuration saved');
+      router.back();
+    } catch (error) {
+      console.error('Failed to save safe:', error);
+      Alert.alert('Error', 'Failed to save Safe configuration. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -302,15 +339,25 @@ export default function CreateSafeScreen() {
         <View style={[styles.bottomContainer, { paddingBottom: insets.bottom + 16 }]}>
           <TouchableOpacity
             style={[styles.createButton, creating && styles.createButtonDisabled]}
-            onPress={handleCreate}
+            onPress={handleCreateNow}
             disabled={creating}
           >
             {creating ? (
               <ActivityIndicator size="small" color={colors.text} />
             ) : (
-              <Text style={styles.createButtonText}>Create Safe</Text>
+              <Text style={styles.createButtonText}>Create Now</Text>
             )}
           </TouchableOpacity>
+          <Text style={styles.createNowHint}>Requires ETH for gas fees</Text>
+
+          <TouchableOpacity
+            style={[styles.saveButton, creating && styles.createButtonDisabled]}
+            onPress={handleSaveForLater}
+            disabled={creating}
+          >
+            <Text style={styles.saveButtonText}>Save for Later</Text>
+          </TouchableOpacity>
+          <Text style={styles.saveHint}>Deploy when you have funds</Text>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -483,5 +530,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+  },
+  createNowHint: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  saveButton: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  saveHint: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    textAlign: 'center',
+    marginTop: 4,
   },
 });

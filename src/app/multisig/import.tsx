@@ -99,6 +99,7 @@ export default function ImportSafeScreen() {
         owners: [],
         threshold: 0,
         createdAt: Date.now(),
+        status: 'deployed',
       });
 
       toast.success('Safe imported successfully!');

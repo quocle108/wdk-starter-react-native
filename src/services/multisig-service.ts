@@ -3,6 +3,8 @@ import { MultisigNetworkType } from '@/config/multisig-config';
 
 const MULTISIG_STORAGE_KEY = 'multisig_safes';
 
+export type SafeStatus = 'pending' | 'deployed';
+
 export interface StoredSafe {
   address: string;
   network: MultisigNetworkType;
@@ -10,6 +12,7 @@ export interface StoredSafe {
   owners: string[];
   threshold: number;
   createdAt: number;
+  status: SafeStatus;
 }
 
 export interface SafeInfo {
