@@ -210,7 +210,7 @@ export default function SafeDetailsScreen() {
 
       const safe4337Pack = await Safe4337Pack.init({
         provider: config.provider,
-        bundlerUrl: config.bundler,
+        bundlerUrl: config.bundlerUrl,
         options: {
           owners: safe.owners,
           threshold: safe.threshold,
