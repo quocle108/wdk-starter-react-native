@@ -107,8 +107,8 @@ const multisigNetworkConfigs: Record<MultisigNetworkType, MultisigNetworkConfig>
   sepolia: {
     chainId: 11155111n,
     provider: 'https://sepolia.gateway.tenderly.co',
-    bundlerUrl: 'https://api.pimlico.io/v2/11155111/rpc?apikey=pim_',
-    paymasterUrl: 'https://api.pimlico.io/v2/11155111/rpc?apikey=pim_',
+    bundlerUrl: 'https://public.stackup.sh/api/v1/node/ethereum-sepolia',
+    paymasterUrl: 'https://public.stackup.sh/api/v1/paymaster/ethereum-sepolia',
     paymasterTokenAddress: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
     entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
     safeModulesVersion: '0.3.0',
