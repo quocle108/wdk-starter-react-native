@@ -242,30 +242,25 @@ export default function SafeDetailsScreen() {
         setIsDeployedOnChain(true);
         toast.success('Safe is deployed on-chain!');
       } else {
-        console.log('[DeploySafe] Safe not deployed, creating deployment transaction...');
+        console.log('[DeploySafe] Safe not deployed, calling deploy() via WDK...');
 
-        const safeDeploymentTransaction = await safe4337Pack.protocolKit.createSafeDeploymentTransaction();
-        console.log('[DeploySafe] Deployment transaction:', safeDeploymentTransaction);
-
-        // Execute the deployment transaction using WDK callAccountMethod
-        console.log('[DeploySafe] Executing deployment transaction via WDK...');
-
-        const deploymentTx = {
-          to: safeDeploymentTransaction.to,
-          value: safeDeploymentTransaction.value ? Number(safeDeploymentTransaction.value) : 0,
-          data: safeDeploymentTransaction.data,
+        // Call deploy() function from wdk-protocol-multisig-safe via callAccountMethod
+        const deployParams = {
+          owners: safe.owners,
+          threshold: safe.threshold,
+          saltNonce: safe.saltNonce,
         };
 
-        console.log('[DeploySafe] Deployment tx params:', deploymentTx);
+        console.log('[DeploySafe] Deploy params:', deployParams);
 
         const result = await callAccountMethod<{ fee: string; hash: string }>(
           network,
           0,
-          'sendTransaction',
-          deploymentTx
+          'deploy',
+          deployParams
         );
 
-        console.log('[DeploySafe] Deployment transaction result:', result);
+        console.log('[DeploySafe] Deploy result:', result);
 
         // Update Safe status to deployed
         await multisigService.updateSafe(safe.address, network, {
