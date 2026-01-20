@@ -160,9 +160,11 @@ export default function SafeDetailsScreen() {
   );
 
   const handleCopyAddress = async () => {
-    if (address) {
-      await Clipboard.setStringAsync(address);
+    const addressToCopy = safe?.address || address;
+    if (addressToCopy) {
+      await Clipboard.setStringAsync(addressToCopy);
       toast.success('Address copied to clipboard');
+      console.log('[SafeDetails] Copied address:', addressToCopy);
     }
   };
 
@@ -195,48 +197,45 @@ export default function SafeDetailsScreen() {
     try {
       const config = getMultisigNetworkConfig(network);
 
-      console.log('[DeploySafe] Starting Safe deployment...');
+      console.log('[DeploySafe] Checking Safe deployment status...');
       console.log('[DeploySafe] Network:', network);
-      console.log('[DeploySafe] Chain ID:', config.chainId.toString());
-      console.log('[DeploySafe] Provider:', config.provider);
-      console.log('[DeploySafe] Safe Name:', safe.name);
+      console.log('[DeploySafe] Safe Address:', safe.address);
+      console.log('[DeploySafe] Salt Nonce:', safe.saltNonce);
       console.log('[DeploySafe] Owners:', safe.owners);
       console.log('[DeploySafe] Threshold:', safe.threshold);
 
-      // TODO: Call actual WDK SDK to deploy Safe
-      // const walletManager = new WalletManagerEvmMultisigSafe({
-      //   rpcUrl: config.rpcUrl,
-      //   chainId: config.chainId,
-      //   paymasterUrl: config.paymasterUrl,
-      // });
-      // const safeAccount = await walletManager.createSafe({
-      //   owners: safe.owners,
-      //   threshold: safe.threshold,
-      // });
-      // const deployedAddress = safeAccount.address;
-
-      console.log('[DeploySafe] Deploying Safe to blockchain...');
-
-      // Simulated deployment - replace with actual SDK call
-      const deployedAddress = `0x${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
-
-      console.log('[DeploySafe] Safe deployed at:', deployedAddress);
-
-      await multisigService.updateSafe(address!, network, {
-        address: deployedAddress,
-        status: 'deployed',
+      const response = await fetch(config.provider, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_getCode',
+          params: [safe.address, 'latest'],
+          id: 1,
+        }),
       });
+      const data = await response.json();
+      const hasCode = data.result && data.result !== '0x';
 
-      console.log('[DeploySafe] Safe updated in storage with status: deployed');
+      console.log('[DeploySafe] Safe deployed on-chain:', hasCode);
 
-      toast.success('Safe deployed successfully!');
-      router.replace({
-        pathname: '/multisig/[address]',
-        params: { address: deployedAddress, network },
-      });
+      if (hasCode) {
+        await multisigService.updateSafe(safe.address, network, {
+          status: 'deployed',
+        });
+        setSafe({ ...safe, status: 'deployed' });
+        setIsDeployedOnChain(true);
+        toast.success('Safe is deployed on-chain!');
+      } else {
+        Alert.alert(
+          'Deployment Required',
+          `To deploy this Safe, you need to:\n\n1. Fund the signer address with ETH for gas\n2. Use @tetherto/wdk-wallet-evm-multisig-safe package to call deploy()\n\nSigner: ${addresses?.[network]?.[0] || 'N/A'}\nSafe: ${safe.address}`,
+          [{ text: 'OK' }]
+        );
+      }
     } catch (error) {
-      console.error('[DeploySafe] Failed to deploy safe:', error);
-      Alert.alert('Error', 'Failed to deploy Safe. Please try again.');
+      console.error('[DeploySafe] Failed to check deployment:', error);
+      Alert.alert('Error', 'Failed to check Safe deployment status.');
     } finally {
       setDeploying(false);
     }
