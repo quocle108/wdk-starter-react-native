@@ -107,8 +107,9 @@ const multisigNetworkConfigs: Record<MultisigNetworkType, MultisigNetworkConfig>
   sepolia: {
     chainId: 11155111n,
     provider: 'https://sepolia.gateway.tenderly.co',
-    bundlerUrl: 'https://public.stackup.sh/api/v1/node/ethereum-sepolia',
-    paymasterUrl: 'https://public.stackup.sh/api/v1/paymaster/ethereum-sepolia',
+    bundlerUrl: 'https://api.candide.dev/public/v3/sepolia',
+    paymasterUrl: 'https://api.candide.dev/public/v3/sepolia',
+    paymasterAddress: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
     paymasterTokenAddress: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
     entryPointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
     safeModulesVersion: '0.3.0',
