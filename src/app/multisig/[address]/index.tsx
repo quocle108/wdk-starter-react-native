@@ -196,30 +196,34 @@ export default function SafeDetailsScreen() {
 
     try {
       const config = getMultisigNetworkConfig(network);
+      const signerAddress = addresses?.[network]?.[0];
 
-      console.log('[DeploySafe] Checking Safe deployment status...');
+      console.log('[DeploySafe] Starting Safe deployment...');
       console.log('[DeploySafe] Network:', network);
       console.log('[DeploySafe] Safe Address:', safe.address);
       console.log('[DeploySafe] Salt Nonce:', safe.saltNonce);
       console.log('[DeploySafe] Owners:', safe.owners);
       console.log('[DeploySafe] Threshold:', safe.threshold);
+      console.log('[DeploySafe] Signer Address:', signerAddress);
 
-      const response = await fetch(config.provider, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'eth_getCode',
-          params: [safe.address, 'latest'],
-          id: 1,
-        }),
+      console.log('[DeploySafe] Initializing Safe4337Pack with predicted Safe...');
+
+      const safe4337Pack = await Safe4337Pack.init({
+        provider: config.provider,
+        bundlerUrl: config.bundler,
+        options: {
+          owners: safe.owners,
+          threshold: safe.threshold,
+          saltNonce: safe.saltNonce,
+        },
       });
-      const data = await response.json();
-      const hasCode = data.result && data.result !== '0x';
 
-      console.log('[DeploySafe] Safe deployed on-chain:', hasCode);
+      console.log('[DeploySafe] Safe4337Pack initialized');
 
-      if (hasCode) {
+      const isSafeDeployed = await safe4337Pack.protocolKit.isSafeDeployed();
+      console.log('[DeploySafe] Safe already deployed:', isSafeDeployed);
+
+      if (isSafeDeployed) {
         await multisigService.updateSafe(safe.address, network, {
           status: 'deployed',
         });
@@ -227,15 +231,20 @@ export default function SafeDetailsScreen() {
         setIsDeployedOnChain(true);
         toast.success('Safe is deployed on-chain!');
       } else {
+        console.log('[DeploySafe] Safe not deployed, creating deployment transaction...');
+
+        const safeDeploymentTransaction = await safe4337Pack.protocolKit.createSafeDeploymentTransaction();
+        console.log('[DeploySafe] Deployment transaction:', safeDeploymentTransaction);
+
         Alert.alert(
-          'Deployment Required',
-          `To deploy this Safe, you need to:\n\n1. Fund the signer address with ETH for gas\n2. Use @tetherto/wdk-wallet-evm-multisig-safe package to call deploy()\n\nSigner: ${addresses?.[network]?.[0] || 'N/A'}\nSafe: ${safe.address}`,
+          'Deploy Safe',
+          `Safe deployment requires sending a transaction.\n\nSigner: ${signerAddress}\nSafe: ${safe.address}\n\nMake sure your signer has enough ETH for gas.`,
           [{ text: 'OK' }]
         );
       }
     } catch (error) {
-      console.error('[DeploySafe] Failed to check deployment:', error);
-      Alert.alert('Error', 'Failed to check Safe deployment status.');
+      console.error('[DeploySafe] Failed to deploy:', error);
+      Alert.alert('Error', `Failed to deploy Safe: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setDeploying(false);
     }
