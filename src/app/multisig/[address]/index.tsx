@@ -5,6 +5,8 @@ import { multisigService, StoredSafe } from '@/services/multisig-service';
 import { getMultisigNetworkConfig, MultisigNetworkType } from '@/config/multisig-config';
 import { networkConfigs } from '@/config/networks';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { Safe4337Pack } from '@wdk-safe-global/relay-kit';
+import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
 import {
   ArrowUpRight,
   Clock,
@@ -13,7 +15,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -33,12 +35,106 @@ export default function SafeDetailsScreen() {
   const router = useDebouncedNavigation();
   const { address, network } = useLocalSearchParams<{ address: string; network: MultisigNetworkType }>();
 
+  const { wallets, activeWalletId } = useWalletManager();
+  const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
+  const { addresses } = useWallet({ walletId: currentWalletId });
+
   const [safe, setSafe] = useState<StoredSafe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [nativeBalance, setNativeBalance] = useState<string>('0');
   const [usdtBalance, setUsdtBalance] = useState<string>('0');
   const [pendingCount, setPendingCount] = useState(0);
+  const [isDeployedOnChain, setIsDeployedOnChain] = useState<boolean | null>(null);
+  const hasInitialized = useRef(false);
+
+  const initializeSafe = useCallback(async (safeData: StoredSafe) => {
+    if (!network || !safeData.saltNonce || hasInitialized.current) return;
+
+    hasInitialized.current = true;
+    setInitializing(true);
+
+    try {
+      const config = getMultisigNetworkConfig(network);
+      const signerAddress = addresses?.[network]?.[0];
+
+      console.log('[SafeDetails] Initializing Safe4337Pack...');
+      console.log('[SafeDetails] Safe Address:', safeData.address);
+      console.log('[SafeDetails] Network:', network);
+      console.log('[SafeDetails] Signer:', signerAddress);
+      console.log('[SafeDetails] Salt Nonce:', safeData.saltNonce);
+
+      const response = await fetch(config.provider, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_getCode',
+          params: [safeData.address, 'latest'],
+          id: 1,
+        }),
+      });
+      const data = await response.json();
+      const hasCode = data.result && data.result !== '0x';
+      setIsDeployedOnChain(hasCode);
+
+      console.log('[SafeDetails] Safe deployed on-chain:', hasCode);
+
+      if (hasCode && safeData.status === 'pending') {
+        console.log('[SafeDetails] Updating status to deployed');
+        await multisigService.updateSafe(safeData.address, network, { status: 'deployed' });
+        setSafe({ ...safeData, status: 'deployed' });
+      }
+
+      const balanceResponse = await fetch(config.provider, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_getBalance',
+          params: [safeData.address, 'latest'],
+          id: 2,
+        }),
+      });
+      const balanceData = await balanceResponse.json();
+      if (balanceData.result) {
+        const balanceWei = BigInt(balanceData.result);
+        const balanceEth = Number(balanceWei) / 1e18;
+        setNativeBalance(balanceEth.toFixed(4));
+        console.log('[SafeDetails] Native balance:', balanceEth.toFixed(4));
+      }
+
+      if (config.usdtToken?.address) {
+        const usdtBalanceResponse = await fetch(config.provider, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_call',
+            params: [{
+              to: config.usdtToken.address,
+              data: `0x70a08231000000000000000000000000${safeData.address.slice(2)}`,
+            }, 'latest'],
+            id: 3,
+          }),
+        });
+        const usdtData = await usdtBalanceResponse.json();
+        if (usdtData.result && usdtData.result !== '0x') {
+          const usdtWei = BigInt(usdtData.result);
+          const usdtAmount = Number(usdtWei) / Math.pow(10, config.usdtToken.decimals || 6);
+          setUsdtBalance(usdtAmount.toFixed(2));
+          console.log('[SafeDetails] USDT balance:', usdtAmount.toFixed(2));
+        }
+      }
+
+      console.log('[SafeDetails] Safe initialization complete');
+    } catch (error) {
+      console.error('[SafeDetails] Failed to initialize Safe:', error);
+    } finally {
+      setInitializing(false);
+    }
+  }, [network, addresses]);
 
   const loadSafeData = useCallback(async () => {
     if (!address || !network) return;
@@ -47,15 +143,15 @@ export default function SafeDetailsScreen() {
       const safeData = await multisigService.getSafe(address, network);
       setSafe(safeData);
 
-      setNativeBalance('0.00');
-      setUsdtBalance('0.00');
-      setPendingCount(0);
+      if (safeData) {
+        initializeSafe(safeData);
+      }
     } catch (error) {
       console.error('Failed to load safe data:', error);
     } finally {
       setLoading(false);
     }
-  }, [address, network]);
+  }, [address, network, initializeSafe]);
 
   useFocusEffect(
     useCallback(() => {
@@ -183,12 +279,15 @@ export default function SafeDetailsScreen() {
 
   const networkConfig = network ? getMultisigNetworkConfig(network) : null;
 
-  if (loading) {
+  if (loading || initializing) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <Header title="Safe Details" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>
+            {initializing ? 'Loading Safe from blockchain...' : 'Loading...'}
+          </Text>
         </View>
       </View>
     );
@@ -230,12 +329,10 @@ export default function SafeDetailsScreen() {
             <Text style={styles.networkName}>{getNetworkName()}</Text>
           </View>
 
-          {!isPending && (
-            <TouchableOpacity style={styles.addressRow} onPress={handleCopyAddress}>
-              <Text style={styles.address}>{formatAddress(address!)}</Text>
-              <Copy size={16} color={colors.primary} />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={styles.addressRow} onPress={handleCopyAddress}>
+            <Text style={styles.address}>{formatAddress(address!)}</Text>
+            <Copy size={16} color={colors.primary} />
+          </TouchableOpacity>
 
           <View style={styles.thresholdBadge}>
             <Text style={styles.thresholdText}>
@@ -367,6 +464,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 12,
   },
   errorContainer: {
     flex: 1,
