@@ -6,7 +6,7 @@ import { getMultisigNetworkConfig, MultisigNetworkType } from '@/config/multisig
 import { networkConfigs } from '@/config/networks';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Safe4337Pack } from '@wdk-safe-global/relay-kit';
-import { useWallet, useWalletManager } from '@tetherto/wdk-react-native-core';
+import { useWallet, useWalletManager, useRefreshBalance } from '@tetherto/wdk-react-native-core';
 import {
   ArrowUpRight,
   Clock,
@@ -37,7 +37,8 @@ export default function SafeDetailsScreen() {
 
   const { wallets, activeWalletId } = useWalletManager();
   const currentWalletId = activeWalletId || wallets[0]?.identifier || 'default';
-  const { addresses } = useWallet({ walletId: currentWalletId });
+  const { addresses, callAccountMethod, isInitialized } = useWallet({ walletId: currentWalletId });
+  const { mutate: refreshBalance } = useRefreshBalance();
 
   const [safe, setSafe] = useState<StoredSafe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -192,11 +193,21 @@ export default function SafeDetailsScreen() {
   const handleDeployNow = async () => {
     if (!safe || !network) return;
 
+    if (!isInitialized) {
+      Alert.alert('Error', 'Wallet not ready. Please wait and try again.');
+      return;
+    }
+
+    const signerAddress = addresses?.[network]?.[0];
+    if (!signerAddress) {
+      Alert.alert('Error', `No address found for network ${network}. Please wait for wallet to initialize.`);
+      return;
+    }
+
     setDeploying(true);
 
     try {
       const config = getMultisigNetworkConfig(network);
-      const signerAddress = addresses?.[network]?.[0];
 
       console.log('[DeploySafe] Starting Safe deployment...');
       console.log('[DeploySafe] Network:', network);
@@ -236,9 +247,40 @@ export default function SafeDetailsScreen() {
         const safeDeploymentTransaction = await safe4337Pack.protocolKit.createSafeDeploymentTransaction();
         console.log('[DeploySafe] Deployment transaction:', safeDeploymentTransaction);
 
+        // Execute the deployment transaction using WDK callAccountMethod
+        console.log('[DeploySafe] Executing deployment transaction via WDK...');
+
+        const deploymentTx = {
+          to: safeDeploymentTransaction.to,
+          value: safeDeploymentTransaction.value ? Number(safeDeploymentTransaction.value) : 0,
+          data: safeDeploymentTransaction.data,
+        };
+
+        console.log('[DeploySafe] Deployment tx params:', deploymentTx);
+
+        const result = await callAccountMethod<{ fee: string; hash: string }>(
+          network,
+          0,
+          'sendTransaction',
+          deploymentTx
+        );
+
+        console.log('[DeploySafe] Deployment transaction result:', result);
+
+        // Update Safe status to deployed
+        await multisigService.updateSafe(safe.address, network, {
+          status: 'deployed',
+        });
+        setSafe({ ...safe, status: 'deployed' });
+        setIsDeployedOnChain(true);
+
+        // Refresh balance after deployment
+        refreshBalance({ accountIndex: 0, type: 'wallet' });
+
+        toast.success('Safe deployed successfully!');
         Alert.alert(
-          'Deploy Safe',
-          `Safe deployment requires sending a transaction.\n\nSigner: ${signerAddress}\nSafe: ${safe.address}\n\nMake sure your signer has enough ETH for gas.`,
+          'Safe Deployed',
+          `Your Safe has been deployed successfully!\n\nTransaction Hash: ${result.hash?.slice(0, 20)}...`,
           [{ text: 'OK' }]
         );
       }
